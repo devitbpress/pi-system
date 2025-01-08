@@ -1,0 +1,78 @@
+html {
+    scroll-behavior: smooth;
+}
+
+/* WebKit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Rounded track */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px; /* Rounded thumb */
+    border: 3px solid #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+/* Firefox-specific styles */
+* {
+    scrollbar-width: thin; /* Thin scrollbar */
+    scrollbar-color: #888 #f1f1f1; /* Thumb and track colors */
+}
+
+/* Custom scroll container for Firefox */
+.scroll-container {
+    overflow: auto;
+    padding-right: 15px; /* Adds padding so scrollbar won't cover content */
+    border-radius: 10px; /* Rounded corners for the container */
+    scroll-behavior: smooth; /* Optional: smooth scrolling effect */
+    position: relative;
+}
+
+.scroll-container::-webkit-scrollbar {
+    border-radius: 10px;
+}
+
+/* Hide Firefox default scrollbar to implement custom look */
+.scroll-container::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #888;
+}
+
+/* Inner shadow trick for Firefox scrollbar rounding effect */
+.scroll-container::-moz-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+#container {
+    height: calc(var(--vh, 1vh) * 100);
+}
+
+.ag-root-wrapper {
+    border: 0;
+}
+
+.ag-header {
+    background-color: white;
+    border-bottom: 1px solid #bae6fd;
+    font-size: 13px;
+}
+
+.ag-header-cell-resize {
+    background-color: white;
+}
+
+.ag-theme-quartz {
+    --ag-header-column-resize-handle-color: rgb(243, 243, 243);
+    font-size: 13px;
+}
