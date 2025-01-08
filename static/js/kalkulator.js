@@ -2,30 +2,17 @@ const inpFile = document.getElementById("inp-file");
 
 let idFile = 1;
 let idHasil = 1;
-// let option = ``;
 let fileList = {};
 let dataUnggah = [];
 let dataHasil = {};
-let modelSet = {
-    Q: "model q",
-    Wilson: "model wilson",
-    Poisson: "model poisson",
-    Tchebycheff: "model tchebycheff",
-    "Regret (Non Moving)": "model non moving min max regret",
-    "Linear (Non Moving)": "model non moving linear",
-    "Non Linear (Non Moving)": "model non moving non linear",
-    BCR: "model bcr",
-    Regret: "model non moving min max regret",
-    Linear: "model non moving linear",
-    NonLinear: "model non moving non linear",
-};
+let modelSet = { Q: "model q", Wilson: "model wilson", Poisson: "model poisson", Tchebycheff: "model tchebycheff", "Regret (Non Moving)": "model non moving min max regret", "Linear (Non Moving)": "model non moving linear", "Non Linear (Non Moving)": "model non moving non linear", BCR: "model bcr", Regret: "model non moving min max regret", Linear: "model non moving linear", NonLinear: "model non moving non linear" };
 
 // const downloadTemplate = (agT) => {
 //     const dataTemplate = {
 //         wilson: ["Material Code", "Material Description", "ABC Indicator", "Permintaan Barang (D) Unit/Tahun", "Harga Barang (p) /Unit", "Ongkos Pesan (A) /Pesan", "Lead Time (L) Tahun", "Ongkos Simpan (h) /Unit/Tahun"],
 //         tchebycheff: ["Material Code", "Material Description", "ABC Indicator", "Harga Barang (p) /Unit", "Kerugian Ketidakadaan Barang (Cu) /Unit", "Standar Deviasi Permintaan Barang (s)", "Rata_Rata/Bulan"],
-//         q: ["Material Code", "Material Description", "ABC Indicator", "Rata - Rata Permintaan Barang (D) Unit/Tahun", "Lead Time (L) Tahun", "Standar Deviasi Permintaan Barang (s) Unit/Tahun", "Ongkos Pesan (A) /Pesan	Harga Barang (p) /Unit", "Ongkos Simpan (h) /Unit/Tahun", "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"],
-//         poisson: ["Material Code", "Material Description", "ABC Indicator", "Rata - Rata Permintaan Barang (D) Unit/Tahun", "Standar Deviasi Permintaan Barang (s) Unit/Tahun", "Lead Time (L) Tahun", "Ongkos Pesan (A) /Pesan", "Harga Barang (p) /Unit	Ongkos Simpan (h) /Unit/Tahun", "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"],
+//         q: ["Material Code", "Material Description", "ABC Indicator", "Rata-Rata Permintaan Barang (D) Unit/Tahun", "Lead Time (L) Tahun", "Standar Deviasi Permintaan Barang (s) Unit/Tahun", "Ongkos Pesan (A) /Pesan	Harga Barang (p) /Unit", "Ongkos Simpan (h) /Unit/Tahun", "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"],
+//         poisson: ["Material Code", "Material Description", "ABC Indicator", "Rata-Rata Permintaan Barang (D) Unit/Tahun", "Standar Deviasi Permintaan Barang (s) Unit/Tahun", "Lead Time (L) Tahun", "Ongkos Pesan (A) /Pesan", "Harga Barang (p) /Unit	Ongkos Simpan (h) /Unit/Tahun", "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"],
 //         nonmoving: ["Material Code", "Material Description", "ABC Indicator", "Ongkos Pemakaian Komponen (H)", "Ongkos Kerugian Akibat Kerusakan (L)", "Jumlah Komponen Terpasang (m)"],
 //         bcr: ["Material Code", "Material Description", "ABC Indicator", "Harga Komponen (Ho)", "Kerugian Komponen (Co)", "Suku Bunga (I)", "Waktu Sisa Operasi (tahun)"],
 //     };
@@ -37,9 +24,9 @@ let modelSet = {
 //     XLSX.writeFile(workbook, `template ${agT}.xlsx`);
 // };
 
-// const numericInput = (event) => (event.target.value = event.target.value.replace(/[^0-9.]/g, ""));
+// const inpSearch = (event) => searchData(event.target.value)
 
-// const inpSearch = (event) => searchData(event.target.value);
+const numericInput = (event) => (event.target.value = event.target.value.replace(/[^0-9.]/g, ""));
 
 function formatNumber(value) {
     if (isNaN(value)) {
@@ -55,7 +42,6 @@ function formatNumber(value) {
 const calcManual = async (argModel) => {
     let dataForm = {};
     let status = "success";
-    let number = 0;
 
     document.querySelectorAll(`#calc${argModel} input`).forEach((element) => {
         if (element.value !== "") {
@@ -73,13 +59,14 @@ const calcManual = async (argModel) => {
     if (status !== "success") {
         return;
     }
+
     const idProgress = progresBar(`Proses Kalkulasi`, `Model ${argModel}`, 5000);
 
     const response = await postFetch("/api/get/calc/manual", { model: modelSet[argModel], items: dataForm });
 
     const indikatorResult = {
-        Q: ["Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", "Reorder Point (ROP) Unit", "Safety Stock (SS) Unit", "Frequensi Pemesanan (f)", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Ongkos Kekurangan Inventori (Ok) /Tahun", "Ongkos Inventori (OT) /Tahun"],
-        Poisson: ["Economic Order Quantity (EOQ) Lot Optimum (qo1)", "Nilai Alpha", "Ongkos Inventori (OT) /Tahun", "Reorder Point (ROP) Unit", "Safety Stock (SS) Unit", "Service Level (%)", "Standar Deviasi Waktu Ancang - Ancang (SL) Unit/Tahun"],
+        Q: ["Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", "Rata-Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", "Reorder Point (ROP) Unit", "Safety Stock (SS) Unit", "Frequensi Pemesanan (f)", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Ongkos Kekurangan Inventori (Ok) /Tahun", "Ongkos Inventori (OT) /Tahun"],
+        Poisson: ["Economic Order Quantity (EOQ) Lot Optimum (qo1)", "Nilai Alpha", "Ongkos Inventori (OT) /Tahun", "Reorder Point (ROP) Unit", "Safety Stock (SS) Unit", "Service Level (%)", "Standar Deviasi Waktu Ancang-Ancang (SL) Unit/Tahun"],
         Wilson: ["Frequensi Pemesanan (f)", "Lot Pengadaan (EOQ) Unit/Pesanan", "Ongkos Inventori (OT) /Tahun", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Reorder Point (ROP) Unit", "Selang Waktu Pesan Kembali (Bulan)", "Selang Waktu Pesan Kembali (Hari)", "Selang Waktu Pesan Kembali (Tahun)"],
         Tchebycheff: ["Lot Pemesanan Optimal (q0)", "Nilai K Model Tchebycheff"],
         Regret: ["Harga Resale Komponen (O)", "Minimum Regret (Rp )", "Strategi Penyediaan Optimal (Unit)"],
@@ -95,8 +82,8 @@ const calcManual = async (argModel) => {
     indikatorResult[argModel].map((item) => {
         resultCalc.innerHTML += `<div class="flex justify-between items-center gap-3 w-full text-xs">
             <div class="whitespace-nowrap">${item}</div>
-            <div class="h-1 w-full flex items-center justify-center text-gray-300"><span class="h-[1px] min-w-20 w-full bg-gray-300"></span><span>></span></div>
-            <div class="py-2 w-fit px-2 border rounded text-right">${typeof response[item] === "number" ? formatNumber(response[item].toFixed(2)) : response[item] !== undefined ? response[item] : "N/A"}</div>
+            <div class="w-full flex items-center justify-center text-gray-300"><span class="h-[1px] min-w-20 w-full bg-gray-300"></span><span class="border-t-2 border-r-2 rotate-45 h-2 w-2"></span></div>
+            <div class="py-2 w-fit px-2 border rounded text-right">${typeof response.data[item] === "number" ? formatNumber(response.data[item].toFixed(2)) : response.data[item] !== undefined ? response.data[item] : "N/A"}</div>
         </div>`;
     });
 
@@ -141,38 +128,20 @@ const uploadFile = async () => {
 
 const prosesFile = async (agData) => {
     const idProgress = progresBar("Proses Data", `Hitung model Kalkulator`, fileList[agData.id].size / 100);
-
-    console.log(fileList[agData.id]);
-    console.log(agData.id);
-    console.log(modelSet[agData.model]);
-
     const idHasilNow = idHasil;
-    const responseCalc = await postFetch("/api/get/calc/manual", { model: "model wilson", items: itemWilson });
+    const response = await postFiles("/api/get/calc/file", fileList[agData.id], agData.id, modelSet[agData.model]);
 
-    if (responseCalc[0] !== "success") {
-        notification("show", "Gagal Kirim Data", "failed");
+    if (response.status !== "success") {
+        notification("show", response.message, "failed");
         sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-        return "failed";
+        return ["failed"];
     }
 
-    if (responseCalc[1].error) {
-        notification("show", "Header tidak sesuai dengan template", "failed");
-        sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-        return "failed";
-    }
+    dataHasil[idHasilNow] = response.data;
 
-    if (modelSet[agData.model] === "nonmoving") {
-        const idModel = { "Regret (Non Moving)": "regret", "Linear (Non Moving)": "linear", "Non Linear (Non Moving)": "non_linear" };
-        responseCalc[1] = responseCalc[1].map((item) => item[idModel[agData.model]]);
-    }
-
-    dataHasil[idHasilNow] = responseCalc[1];
-    option += `<option value='${idHasilNow}'>${agData.model} | ${fileList[agData.id].name}</option>`;
-
-    idHasil = idHasil + 1;
     sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-    tools("hasil", idHasilNow);
-    return "success";
+    idHasil = idHasil + 1;
+    return ["success", idHasilNow];
 };
 
 const toolsUnggah = (header, headerAction, childContent) => {
@@ -226,8 +195,10 @@ const toolsUnggah = (header, headerAction, childContent) => {
 
         span.addEventListener("click", async () => {
             const pross = await prosesFile(params.data);
-            if (pross === "success") {
+            console.log(pross);
+            if (pross[0] === "success") {
                 dataUnggah.find((item) => item.id === params.data.id).status = `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/done-green.png" alt="delete" class="w-4 h-4" /><span class="text-green-500">Berhasil</span></div>`;
+                tools("hasil", pross[1]);
             } else {
                 dataUnggah.find((item) => item.id === params.data.id).status = `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/error-yellow.png" alt="delete" class="w-4 h-4" /><span class="text-yellow-500">Gagal</span></div>`;
             }
@@ -242,7 +213,7 @@ const toolsUnggah = (header, headerAction, childContent) => {
 
     columnDefs[aggridId] = [
         { headerName: "NAMA", field: "name", minWidth: 150 },
-        { headerName: "Model", field: "model", editable: true, cellEditor: "agSelectCellEditor", cellEditorParams: { values: ["Q", "Wilson", "Poisson", "Tchybeef", "Regret (Non Moving)", "Linear (Non Moving)", "Non Linear (Non Moving)", "BCR"] }, onCellValueChanged: (event) => aggridValueChanged(event), minWidth: 150 },
+        { headerName: "Model", field: "model", editable: true, cellEditor: "agSelectCellEditor", cellEditorParams: { values: ["Q", "Wilson", "Poisson", "Tchebycheff", "Regret (Non Moving)", "Linear (Non Moving)", "Non Linear (Non Moving)", "BCR"] }, onCellValueChanged: (event) => aggridValueChanged(event), minWidth: 150 },
         { headerName: "AKSI", field: "action", cellRenderer: (params) => aggridCellRenderer(params), minWidth: 100, maxWidth: 100 },
         { headerName: "", field: "proses", cellRenderer: (params) => aggridCellRendererProses(params), minWidth: 100, maxWidth: 100 },
         { headerName: "STATUS", field: "status", futoHeight: true, cellRenderer: (params) => aggridCellRendererStatus(params), minWidth: 150 },
@@ -250,7 +221,7 @@ const toolsUnggah = (header, headerAction, childContent) => {
 
     setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
 };
-// <div class="w-fit px-4 py-2 cursor-pointer hover:text-blue-700 hover:bg-blue-50 duration-150">satu</div>
+
 const toolsHasil = (header, headerAction, childContent, agD) => {
     const aggridId = "hasil";
     header.textContent = "Hasil Kalkulator Model";
@@ -270,6 +241,9 @@ const toolsHasil = (header, headerAction, childContent, agD) => {
     </div>`;
 
     console.log(dataHasil);
+    const sheet = document.getElementById("sheet-aggrid");
+    sheet.innerHTML += `<div onclick="aggridSheet(${idHasilNow})" class="w-fit px-4 py-2 cursor-pointer hover:text-blue-700 hover:bg-blue-50 duration-150">${modelSet[agData.model]} | ${fileList[agData.id].name}</div>`;
+
     // try {
     //     columnDefs[aggridId] = Object.keys(dataHasil[agD][0]).map((key) => {
     //         const lenght = key.length >= 20 ? key.length * 8 : key.length >= 15 ? key.length * 9 : key.length >= 10 ? key.length * 10 : key.length * 12;
@@ -339,12 +313,12 @@ const toolsQ = (header, headerAction, childContent) => {
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <span>Material Code</span>
-                            <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                            <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
 
                         <div class="flex flex-col">
                             <span>ABC Indicator</span>
-                            <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                            <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                     </div>
                     <div class="flex flex-col w-full">
@@ -354,21 +328,21 @@ const toolsQ = (header, headerAction, childContent) => {
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                            <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                            <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                         </div>
                         <div class="flex flex-col">
                             <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                            <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                            <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                         </div>
                     </div>
                     <div class="flex gap-2">                    
                         <div class="flex flex-col">
                             <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                            <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                            <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                         </div>
                         <div class="flex flex-col">
                             <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                            <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                            <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                         </div>
                     </div>
                     <div class="flex flex-col">
@@ -376,7 +350,7 @@ const toolsQ = (header, headerAction, childContent) => {
                         <input name="ongkos_kekurangan_inventory_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
-                        <div>Rata - Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
+                        <div>Rata-Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
                         <input name="rata_rata_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
@@ -406,11 +380,11 @@ const toolWilson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -420,21 +394,21 @@ const toolWilson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -464,11 +438,11 @@ const toolsPoisson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -478,15 +452,15 @@ const toolsPoisson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    <div>Rata - Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
+                    <div>Rata-Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
                     <input name="rata_rata_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                 </div>
                 <div class="flex flex-col">
@@ -496,11 +470,11 @@ const toolsPoisson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -530,11 +504,11 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -543,7 +517,7 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
                 </div>
                 <div class="flex flex-col">
                     <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                    <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Standar Deviasi Permintaan Barang (s) <span class="text-xs text-red-500">*</span></div>
@@ -554,7 +528,7 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
                     <input name="kerugian_ketidakadaan_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
-                    <div>Rata - Rata Permintaan Barang (alpha) <span class="text-xs text-red-500">*</span></div>
+                    <div>Rata-Rata Permintaan Barang (alpha) <span class="text-xs text-red-500">*</span></div>
                     <input name="rata_rata_permintaan_barang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="alpha" />
                 </div>
             </form>
@@ -572,7 +546,7 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
 const toolsNonMovingMinRegret = (header, headerAction, childContent) => {
     header.textContent = "Model Manual";
     headerAction.innerHTML = "";
-    
+
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 overflow-y-scroll">
         <div class="flex flex-col gap-3 w-fit h-fit">
             <h1 class="font-medium text-lg text-blue-900 mb-4">Model Regret (Non-Moving)</h1>
@@ -580,11 +554,11 @@ const toolsNonMovingMinRegret = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -626,11 +600,11 @@ const toolsNonMovingLinear = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -672,11 +646,11 @@ const toolsNonMovingNonLinear = (header, headerAction, childContent) => {
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <span>Material Code</span>
-                            <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                            <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                         <div class="flex flex-col">
                             <span>ABC Indicator</span>
-                            <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                            <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                     </div>
                     <div class="flex flex-col">
@@ -718,11 +692,11 @@ const toolsBcr = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Material Code</h1>
-                        <input name="material_code" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <h1>ABC Indicator</h1>
-                        <input name="abc_indikator" type="text" class="py-2 w-52 px-2 border rounded" placeholder="optional" />
+                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
@@ -732,21 +706,21 @@ const toolsBcr = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Harga Komponen (Ho) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="harga_komponen" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="harga" />
+                        <input name="harga_komponen" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="harga" />
                     </div>
                     <div class="flex flex-col">
                         <h1>Kerugian Komponen (Co) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="kerugian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="kerugian" />
+                        <input name="kerugian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="kerugian" />
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Suku Bunga (I) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="suku_bunga" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="suku bunga" />
+                        <input name="suku_bunga" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="suku bunga" />
                     </div>
                     <div class="flex flex-col">
                         <h1>Waktu Sisa Operasi (tahun) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="waktu_sisa_operasi" oninput="numericInput(event)" type="text" class="py-2 w-52 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="waktu_sisa_operasi" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                 </div>
             </form>

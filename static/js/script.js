@@ -15,6 +15,23 @@ const postFetch = async (agU, agD) => {
     }
 };
 
+// post file
+const postFiles = async (agUrl, agFile, agId, agModel) => {
+    const formData = new FormData();
+    formData.append("file", agFile);
+    formData.append("file_id", agId);
+    formData.append("model", agModel);
+
+    try {
+        const response = await fetch(agUrl, { method: "POST", body: formData });
+        const data = await response.json();
+
+        return data
+    } catch (error) {
+        return ["error", error.message || error];
+    }
+};
+
 // ~~Navigation~~
 const url = new URL(window.location.href);
 const urlParams = new URLSearchParams(window.location.search);

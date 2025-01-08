@@ -11,19 +11,21 @@ def get_calc_manual():
     try:
         result = utils.manual_calculation(data_request)
 
-        return jsonify(result)
+        return jsonify({'status': 'success', 'data': result})
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@bp_api.route('api/get/calc/file', methods=['POST'])
+@bp_api.route('/api/get/calc/file', methods=['POST'])
 def get_calc_file():
     data = request.files
+
     if 'file' not in data:
         return jsonify({'error': 'No file part'}), 400
 
     file = data['file']
-    
+    model = request.form.get('model', 'none')
+
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
@@ -33,15 +35,13 @@ def get_calc_file():
     if file.content_type not in ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']:
         return jsonify({'error': 'Invalid file format. Only Excel files are allowed.'}), 400
 
-    model = request.form.get('model', 'none')
-
     try:
         df = pd.read_excel(file, engine='openpyxl')
         df = df.fillna('')
-        data = df.to_dict(orient='records')
-        
-        processed_data = utils.calc_model(data, model)
-        
-        return jsonify(processed_data)
+        data_file = df.to_dict(orient='records')
+
+        result = utils.array_calculation(data_file, model)
+        return jsonify({'status': 'success', 'data': result})
+
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
