@@ -16,17 +16,17 @@ const postFetch = async (agU, agD) => {
 };
 
 // post file
-const postFiles = async (agUrl, agFile, agId, agModel) => {
+const postFiles = async (agUrl, agFile, agId, item) => {
     const formData = new FormData();
     formData.append("file", agFile);
     formData.append("file_id", agId);
-    formData.append("model", agModel);
+    formData.append("item", item);
 
     try {
         const response = await fetch(agUrl, { method: "POST", body: formData });
         const data = await response.json();
 
-        return data
+        return data;
     } catch (error) {
         return ["error", error.message || error];
     }
@@ -103,6 +103,20 @@ btnChevron ? btnChevron.addEventListener("click", () => miniNav()) : void 0;
 window.addEventListener("resize", setHeight);
 // ~~Navigation~~
 
+const indikatorNavigation = (agN, agI) => {
+    const element = document.querySelector(`.int-${agN}`);
+    color = { P: "#3b82f6", D: "#22c55e", U: "#eab308" };
+
+    element.textContent = agI;
+    element.style.color = color[agI];
+    element.style.textShadow = `
+        -1px -1px 0 white,  
+        1px -1px 0 white,
+        -1px 1px 0 white,
+        1px 1px 0 white
+    `;
+};
+
 // ~~Ag Grid~~
 let gridApi = {};
 let columnDefs = {};
@@ -137,9 +151,9 @@ const setupAggrid = async (agId, agData, agCol, agName, agView) => {
 
 // addon aggrid
 const setLoading = (value, name) => gridApi[name].setGridOption("loading", value);
-const downloadCsv = (name) => gridApi[name].exportDataAsCsv();
+const downloadCsv = (event) => gridApi[event.target.getAttribute("data")].exportDataAsCsv();
 const searchData = (agV, name) => gridApi[name].setGridOption("quickFilterText", agV);
-const inpSearch = (event, name) => searchData(event.target.value, name);
+const inpSearch = (event) => searchData(event.target.value, event.target.getAttribute("data"));
 // ~~Ag Grid~~
 
 // ~~Notification~~

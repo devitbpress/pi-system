@@ -76,3 +76,12 @@ html {
     --ag-header-column-resize-handle-color: rgb(243, 243, 243);
     font-size: 13px;
 }
+
+.ag-cell {
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    text-align: center;
+}

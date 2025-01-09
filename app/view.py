@@ -12,6 +12,11 @@ def testing_view():
 def manual_calc_view():
     return render_template('kalkulator.html')
 
+# halaman analisis
+@bp_view.route("/analisis")
+def analysis_view():
+    return render_template('analisis.html')
+
 # ~~~~~~~~~~~~~~~~~
 @bp_view.route("/")
 def index():
