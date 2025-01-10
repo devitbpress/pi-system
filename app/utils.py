@@ -680,7 +680,7 @@ def normal_model(normal_array):
 
     result_normal = []
 
-    product = db.db.get_product_model(material_code_list)
+    product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
         print("gagal")
@@ -762,7 +762,7 @@ def poisson_model(poisson_array):
 
     result_poisson = []
 
-    product = db.db.get_product_model(material_code_list)
+    product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
         print("gagal")
@@ -890,6 +890,157 @@ def taktentu_model(taktentu_array):
             })
 
     return result_taktentu
+
+# belum
+def non_moving(non_moving_array):
+    # Membaca file Excel dan mendefinisikan kolom berdasarkan baris kedua (indeks 1)
+    df_verifikasi_No_Moving = pd.read_excel(
+        "20Agustus_Hasil_Hitung_Kalkulator_Stock_Holding_update_Data.xlsx", 
+        sheet_name= "No_Moving (Belum)", 
+        header=1  # Memulai pembacaan header dari baris kedua
+    )
+    df_verifikasi_No_Moving
+    # Ganti titik sebagai pemisah ribuan dengan string kosong, lalu konversi menjadi float
+    df_verifikasi_No_Moving['Stock Out Effect'] = 3_720_000_000.00
+    df_verifikasi_No_Moving
+
+    # Inisiasi hasil model MinMaxRegret
+    hasil_list_hasil_Model_No_Moving_MinMaxRegret = []
+
+    # Iterasi melalui DataFrame input Pola No Moving
+    for index, row in df_verifikasi_No_Moving.iterrows():
+        hasil_MinMaxRegret = Model_MinMaxRegret(
+            Ongkos_pemakaian_komponen_H= row['Unit Price'],
+            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
+            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang']  
+        )
+        
+        hasil_list_hasil_Model_No_Moving_MinMaxRegret.append(hasil_MinMaxRegret)
+
+    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
+    df_hasil_Model_No_Moving_MinMaxRegret = pd.DataFrame(hasil_list_hasil_Model_No_Moving_MinMaxRegret)
+
+    pd.options.display.float_format = '{:,.0f}'.format
+    # Tampilkan hasil
+    df_hasil_Model_No_Moving_MinMaxRegret
+
+
+    # Inisiasi hasil model LinearKerusakan
+    hasil_list_hasil_Model_No_Moving_LinearKerusakan = []
+
+    # Iterasi melalui DataFrame input Pola No Moving
+    for index, row in df_verifikasi_No_Moving.iterrows():
+        hasil_LinearKerusakan = model_kerusakan_linear(
+            Ongkos_pemakaian_komponen_H= row['Unit Price'],
+            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
+            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang']  
+        )
+        
+        hasil_list_hasil_Model_No_Moving_LinearKerusakan.append(hasil_LinearKerusakan)
+
+    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
+    df_hasil_Model_No_Moving_LinearKerusakan = pd.DataFrame(hasil_list_hasil_Model_No_Moving_LinearKerusakan)
+
+    pd.options.display.float_format = '{:,.0f}'.format
+    # Tampilkan hasil
+    df_hasil_Model_No_Moving_LinearKerusakan
+
+    # Inisiasi hasil model MinMaxRegret
+    hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4 = []
+
+    # Iterasi melalui DataFrame input Pola No Moving
+    for index, row in df_verifikasi_No_Moving.iterrows():
+        hasil_Non_LinearKerusakan_beta4 = model_kerusakan_non_linear(
+            Ongkos_pemakaian_komponen_H= row['Unit Price'],
+            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
+            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang'],
+            beta=4  
+        )
+        
+        hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4.append(hasil_Non_LinearKerusakan_beta4)
+
+    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
+    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4 = pd.DataFrame(hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4)
+
+    pd.options.display.float_format = '{:,.0f}'.format
+    # Tampilkan hasil
+    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4
+
+
+    # Inisiasi hasil model MinMaxRegret
+    hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5 = []
+
+    # Iterasi melalui DataFrame input Pola No Moving
+    for index, row in df_verifikasi_No_Moving.iterrows():
+        hasil_Non_LinearKerusakan_beta5 = model_kerusakan_non_linear(
+            Ongkos_pemakaian_komponen_H= row['Unit Price'],
+            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
+            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang'],
+            beta=5  
+        )
+        
+        hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5.append(hasil_Non_LinearKerusakan_beta5)
+
+    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
+    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5 = pd.DataFrame(hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5)
+
+    pd.options.display.float_format = '{:,.0f}'.format
+    # Tampilkan hasil
+    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5
+
+    # Tentukan folder output untuk menyimpan file
+    output_folder = "s:/Project & Research/01. Pupuk Indonesia/pi/Data Pa Bambang/Data History/Model_Kalkulator_Fixed/testfolder/output"  # Ganti dengan path folder yang diinginkan
+    filename11 = 'Data_Output_MinMaxRegret.xlsx'
+    filename12 = 'Data_Output_LinearKerusakan.xlsx'
+    filename13 = 'Data_Output_Non_LinearKerusakan_beta4.xlsx'
+    filename14 = 'Data_Output_Non_LinearKerusakan_beta4.xlsx'
+
+
+    # # Mengekspor data gabungan dengan progres
+    # export_data_with_progress(df_hasil_Model_No_Moving_MinMaxRegret, output_folder, filename11)
+    # export_data_with_progress(df_hasil_Model_No_Moving_LinearKerusakan, output_folder, filename12)
+    # export_data_with_progress(df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4, output_folder, filename13)
+    # export_data_with_progress(df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5, output_folder, filename14)
+
+# belum
+def bcr(bcr_array):
+    # Membaca file Excel dan mendefinisikan kolom berdasarkan baris kedua (indeks 1)
+    df_verifikasi_Model_BCR = pd.read_excel(
+        "20Agustus_Hasil_Hitung_Kalkulator_Stock_Holding_update_Data.xlsx", 
+        sheet_name="BCR (belum)", 
+        header=1  # Memulai pembacaan header dari baris kedua
+    )
+
+    # Ganti titik sebagai pemisah ribuan dengan string kosong, lalu konversi menjadi float
+    df_verifikasi_Model_BCR['Stock Out Effect'] = 3_720_000_000
+    df_verifikasi_Model_BCR
+
+    # Inisiasi hasil model BCR
+    hasil_list_hasil_Model_BCR = []
+
+    # Iterasi melalui DataFrame input Pola No Moving
+    for index, row in df_verifikasi_Model_BCR.iterrows():
+        hasil_Model_BCR = Model_Inventori_BCR(
+        Harga_Komponen_Ho=row['Unit Price'],
+        Kerugian_Komponen_Co=row['Stock Out Effect'],
+        Suku_bunga_i= 0.1,
+        Waktu_sisa_operasi=row['Sisa Tahun Pemakaian'],
+        probabilitas= "uniform"
+        )
+        # Tambahkan hasil ke dalam list
+        hasil_list_hasil_Model_BCR.append(hasil_Model_BCR)
+
+    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
+    df_hasil_Model_BCR_Uniform = pd.DataFrame(hasil_list_hasil_Model_BCR)
+
+    pd.options.display.float_format = '{:,.0f}'.format
+
+    # Export dataaset
+    filename15 = 'Data_Output_Non_Linear_ModelBCR_Uniform.xlsx'
+
+
+    # Mengekspor data gabungan dengan progres
+    export_data_with_progress(df_hasil_Model_BCR_Uniform, output_folder, filename15)
 
 # proses classification model
 def processing_model(dataframe):

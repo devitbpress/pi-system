@@ -1,6 +1,42 @@
 const inpFile = document.getElementById("inp-file");
 const lblFile = document.getElementById("lbl-file");
 
+const dataTest = [
+    {
+        "Base Unit of Measure": "TON",
+        Material: 3000067,
+        "Material Description": "FERTILIZER:BRUCITE;50KG/BAG;75%MGO",
+        "Material.1": 3000067,
+        "Movement Type": 351,
+        "Posting Date": "Mon, 04 Jan 2016 00:00:00 GMT",
+        "Purchase Order": 5210000044,
+        Quantity: 18,
+        "Unnamed: 7": 84.67,
+    },
+    {
+        "Base Unit of Measure": "TON",
+        Material: 1000017,
+        "Material Description": "DAP:(NH4)2HPO4;GRANULAR;64%",
+        "Material.1": 1000017,
+        "Movement Type": "351",
+        "Posting Date": "Tue, 05 Jan 2016 00:00:00 GMT",
+        "Purchase Order": 5210000000,
+        Quantity: 90.62,
+        "Unnamed: 7": 32952.36000000004,
+    },
+    {
+        "Base Unit of Measure": "TON",
+        Material: 1000017,
+        "Material Description": "DAP:(NH4)2HPO4;GRANULAR;64%",
+        "Material.1": 1000017,
+        "Movement Type": "351",
+        "Posting Date": "Tue, 05 Jan 2016 00:00:00 GMT",
+        "Purchase Order": 5210000000,
+        Quantity: 84.35,
+        "Unnamed: 7": 32952.36000000004,
+    },
+];
+
 let session = sessionStorage.getItem("session");
 if (!session) {
     let now = new Date();
@@ -11,12 +47,12 @@ if (!session) {
 let fileOnProcess = true;
 let dataListFile = {};
 
-let fileId = 0;
+let idFileMentah = 1;
 let dataList = [];
 let dataMentah = {};
 let idProduct = 1;
-// let dataSubset = [];
-// let dataClass = [];
+let dataSubset = [];
+let dataClass = {};
 // let dataModel = {};
 // let processingButton = {};
 // let intElement = "new";
@@ -38,6 +74,7 @@ const runAllFile = async () => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (merge.status !== "success");
+    dataSubset = merge.data;
 
     let classification;
     do {
@@ -47,6 +84,10 @@ const runAllFile = async () => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (classification.status !== "success");
+    classification.data.forEach((item) => {
+        !dataClass[item.Kategori] ? (dataClass[item.Kategori] = []) : "";
+        dataClass[item.Kategori].push(item);
+    });
 
     let model;
     do {
@@ -57,12 +98,10 @@ const runAllFile = async () => {
         }
     } while (model.status !== "success");
 
-    console.log(merge);
-    console.log(classification);
     console.log(model);
 };
 
-const uploadFile = async (agN) => {
+const uploadFile = async (index) => {
     if (!fileOnProcess) {
         return;
     } else {
@@ -72,61 +111,127 @@ const uploadFile = async (agN) => {
     }
 
     try {
-        const fileIdNow = agN + 1;
-        const file = inpFile.files[agN];
+        const file = inpFile.files[index];
         const times = file.size / 100;
         const eksistensi = file.name.split(".").pop().toLowerCase();
         const idProgress = progresBar("Baca data histori Good Issue (GI)", `${file.name}`, times);
-
         indikatorNavigation("list", "P");
 
         const missData = (message) => {
-            sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
             indikatorNavigation("list", "D");
             notification("show", message, "failed");
+            sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
             fileOnProcess = true;
-            uploadFile(agN + 1);
+            lblFile.style.cursor = "pointer";
+            inpFile.disabled = false;
+            idFileMentah = idFileMentah + 1;
+            uploadFile(index + 1);
             return;
         };
 
         eksistensi !== "xls" && eksistensi !== "XLS" && eksistensi !== "xlsx" && eksistensi !== "XLSX" ? missData(`${file.name} tidak diizinkan`) : "";
-        const response = await postFiles("/api/push/analysis/file", file, fileIdNow, session);
+        const response = await postFiles("/api/push/analysis/file", file, idFileMentah, session);
         response.status !== "success" ? missData(response.message) : "";
 
         let statusAggrid = ``;
         if (response.status === "success") {
             statusAggrid = `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/done-green.png" alt="delete" class="w-4 h-4" /><span class="text-green-500">Terunggah</span></div>`;
-            dataMentah[file.name] = response.data;
+            dataMentah[idFileMentah] = { id: idFileMentah, name: file.name, data: response.data };
             notification("show", `${file.name} berhasil diunggah`, "success");
         } else {
             notification("show", `${file.name} gagal diunggah`, "failed");
             statusAggrid = `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/error-yellow.png" alt="delete" class="w-4 h-4" /><span class="text-yellow-500">Gagal</span></div>`;
         }
 
-        dataList.push({
-            name: file.name,
-            size: `${file.size / 1000}`,
-            action: `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/delete-red.png" alt="delete" class="w-4 h-4" /><span class="text-red-500">Hapus</span></div>`,
-            status: statusAggrid,
-            id: fileIdNow,
-        });
+        dataList.push({ name: file.name, size: `${file.size / 1000}`, action: `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/delete-red.png" alt="delete" class="w-4 h-4" /><span class="text-red-500">Hapus</span></div>`, status: statusAggrid, id: idFileMentah });
 
-        tools("list");
-
-        if (inpFile.files.length !== agN + 1) {
+        if (inpFile.files.length !== index + 1) {
             fileOnProcess = true;
+            lblFile.style.cursor = "pointer";
+            inpFile.disabled = false;
             sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-            uploadFile(agN + 1);
+            idFileMentah = idFileMentah + 1;
+            uploadFile(index + 1);
             return;
         }
 
         fileOnProcess = true;
+        lblFile.style.cursor = "pointer";
+        inpFile.disabled = false;
+        idFileMentah = idFileMentah + 1;
+
         sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
         indikatorNavigation("list", "D");
+        indikatorNavigation("mentah", "D");
+
+        tools("mentah");
     } catch (error) {
         notification("show", "Gagal upload file", "failed");
         console.log(error);
     }
+};
+
+const aggridSheet = (agD) => {
+    const data = Object.values(dataMentah).filter((item) => item.id == agD)[0];
+    const aggridId = `mentah-${data.id}`;
+
+    document.querySelectorAll(".sheet-aggrid-tag").forEach((item) => item.classList.remove("bg-blue-50", "text-blue-700"));
+    document.getElementById(`sheet-${agD}`).classList.add("bg-blue-50", "text-blue-700");
+
+    columnDefs[aggridId] = [];
+
+    Object.keys(data.data[0]).forEach((item) => {
+        const lenght = item.length >= 20 ? item.length * 8 : item.length >= 15 ? item.length * 9 : item.length >= 10 ? item.length * 10 : item.length * 12;
+        columnDefs[aggridId].push({
+            headerName: item,
+            field: item,
+            minWidth: lenght,
+            cellRenderer: (params) => {
+                return params.value;
+            },
+        });
+    });
+
+    datasetAgGrid[aggridId] = data.data;
+
+    document.getElementById("btnCsv").setAttribute("data", aggridId);
+    document.getElementById("inpSearch").setAttribute("data", aggridId);
+
+    setupAggrid(`aggrid-mentah`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const aggridSheetClass = (agD) => {
+    const data = dataClass[agD];
+    const dataPola = { "Pola Tak - Tentu": "taktentu", "Pola Deterministik": "deterministik", "Pola Poisson": "poisson", "Pola Normal": "Normal" };
+    const aggridId = `class-${dataPola[agD]}`;
+
+    document.querySelectorAll(".sheet-aggrid-tag").forEach((item) => item.classList.remove("bg-blue-50", "text-blue-700"));
+    document.getElementById(`sheet-${dataPola[agD]}`).classList.add("bg-blue-50", "text-blue-700");
+
+    columnDefs[aggridId] = [];
+
+    columnDefs.filtered = [
+        { headerName: "Material Code", field: "Material_Code", minWidth: 150 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 150 },
+        { headerName: "Kategori", field: "Kategori", minWidth: 150, filter: true },
+        { headerName: "Proses 1", field: "Proses1", minWidth: 150 },
+        { headerName: "Proses 2", field: "Proses2", minWidth: 150 },
+        { headerName: "Jumlah Data", field: "Jumlah_Data", minWidth: 150 },
+        { headerName: "Rata-Rata", field: "Rata_Rata", minWidth: 150 },
+        { headerName: "Variansi", field: "Variansi", minWidth: 150 },
+        { headerName: "Standar Deviasi", field: "Standar_Deviasi", minWidth: 150 },
+        { headerName: "P Value", field: "P_Value", minWidth: 150 },
+        { headerName: "Deskripsi Pengujian Statistik", field: "Deskripsi_Pengujian_Statistik", minWidth: 150 },
+        { headerName: "Hasil Uji", field: "Hasil_uji", minWidth: 150 },
+    ];
+
+    console.log(data);
+    datasetAgGrid[aggridId] = data;
+
+    document.getElementById("btnCsv").setAttribute("data", aggridId);
+    document.getElementById("inpSearch").setAttribute("data", aggridId);
+
+    setupAggrid(`aggrid-class`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
 };
 
 const toolsList = (header, headerAction, childContent) => {
@@ -208,6 +313,114 @@ const toolsList = (header, headerAction, childContent) => {
     setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
 };
 
+const toolsMentah = (header, headerAction, childContent) => {
+    const aggridId = "mentah";
+    header.textContent = "Data Mentah";
+    headerAction.innerHTML = "";
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+            <div class="w-full flex justify-between text-sm">
+                <div class="flex gap-2 items-center"></div>
+                <div class="flex gap-2 justify-between items-center">
+                    <span>Cari Data</span>
+                    <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                    <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                </div>
+            </div>
+            <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+            <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
+        </div>`;
+
+    if (Object.keys(dataMentah).length > 0) {
+        const sheet = document.getElementById("sheet-aggrid");
+        sheet.innerHTML = "";
+        Object.values(dataMentah).forEach((item) => (sheet.innerHTML += `<div id="sheet-${item.id}" onclick="aggridSheet(${item.id})" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item.name}</div>`));
+        thisIdhasil = Object.keys(dataMentah)[0];
+        aggridSheet(thisIdhasil);
+    }
+};
+
+const toolsSubset = (header, headerAction, childContent) => {
+    const aggridId = "subset";
+    header.textContent = "Subset Data";
+    headerAction.innerHTML = "";
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Subset Data</div>
+            <div class="flex gap-2 justify-between items-center">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    const aggridValueGetter = (params) => {
+        return new Date(params.data["Posting Date"]);
+    };
+
+    const aggridValueFormatter = (params) => {
+        const date = new Date(params.value);
+        return date.toISOString().split("T")[0];
+    };
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    columnDefs[aggridId] = [
+        { headerName: "Posting Date", field: "Posting Date", minWidth: 150, maxWidth: 150, valueGetter: (params) => aggridValueGetter(params), valueFormatter: (params) => aggridValueFormatter(params) },
+        { headerName: "Material Code", field: "Material_Code", minWidth: 150, maxWidth: 150 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 150 },
+        { headerName: "Quantity(EA)", field: "Quantity(EA)", minWidth: 150, maxWidth: 150, valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Movement Type", field: "Movement Type", minWidth: 150, maxWidth: 150 },
+    ];
+
+    if (dataSubset.length > 0) {
+        datasetAgGrid[aggridId] = dataSubset;
+    }
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsClass = (header, headerAction, childContent) => {
+    const aggridId = "class";
+    header.textContent = "Data Klasifikasi";
+    headerAction.innerHTML = "";
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between">
+            <div class="flex gap-2 items-center text-sm"></div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                    <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                    <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+        <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
+    </div>`;
+
+    if (Object.keys(dataClass).length > 0) {
+        const sheet = document.getElementById("sheet-aggrid");
+        sheet.innerHTML = "";
+        const dataPola = { "Pola Tak - Tentu": "taktentu", "Pola Deterministik": "deterministik", "Pola Poisson": "poisson", "Pola Normal": "Normal" };
+        Object.keys(dataClass).forEach((item) => (sheet.innerHTML += `<div id="sheet-${dataPola[item]}" onclick="aggridSheetClass('${item}')" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item}</div>`));
+        thisIdhasil = Object.keys(dataClass)[0];
+        aggridSheetClass(thisIdhasil);
+    }
+};
+
 const tools = (agT) => {
     const header = document.getElementById("header");
     const headerAction = document.getElementById("header-action");
@@ -232,170 +445,9 @@ const tools = (agT) => {
     window.history.replaceState({}, "", url.toString());
 
     agT === "list" ? toolsList(header, headerAction, childContent) : "";
-
-    if (agT === "mentah") {
-        header.textContent = "Data Mentah";
-        headerAction.innerHTML = "";
-
-        let option = Object.keys(dataMentah).map((key) => {
-            return `<option value='${key}'>${key}</option>`;
-        });
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div class="flex gap-2 items-center">
-                    <span>Nama File: </span>
-                    <select id="slc-mentah" class="cursor-pointer bg-transparent">${option}</select>
-                </div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        try {
-            columnDefs.mentah = Object.keys(dataMentah[document.getElementById("slc-mentah").value][0]).map((key) => {
-                const lenght = key.length >= 20 ? key.length * 8 : key.length >= 15 ? key.length * 9 : key.length >= 10 ? key.length * 10 : key.length * 12;
-                return {
-                    headerName: key,
-                    field: key,
-                    minWidth: lenght,
-                    cellRenderer: (params) => {
-                        return params.value;
-                    },
-                };
-            });
-
-            document.getElementById("slc-mentah").addEventListener("change", () => {
-                columnDefs.mentah = Object.keys(dataMentah[document.getElementById("slc-mentah").value][0]).map((key) => {
-                    const lenght = key.length >= 20 ? key.length * 8 : key.length >= 15 ? key.length * 9 : key.length >= 10 ? key.length * 10 : key.length * 12;
-                    return {
-                        headerName: key,
-                        field: key,
-                        minWidth: lenght,
-                        cellRenderer: (params) => {
-                            return params.value;
-                        },
-                    };
-                });
-
-                setupAggrid(dataMentah[document.getElementById("slc-mentah").value], columnDefs.mentah, false);
-            });
-
-            !processingButton.mentah ? (processingButton.mentah = "allow") : void 0;
-            if (processingButton.mentah === "allow") {
-                headerAction.innerHTML = `<button id="btn-process-mentah" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded text-xs">Proses Dataframe</button>`;
-                document.getElementById("btn-process-mentah").addEventListener("click", () => {
-                    headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Sedang Memproses Dataframe</button>`;
-                    processingButton.mentah = "processing";
-                    subset();
-                });
-            } else if (processingButton.mentah === "processing") {
-                headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Sedang Memproses Dataframe</button>`;
-            } else {
-                headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Proses Selesai</button>`;
-            }
-        } catch (error) {
-            columnDefs.mentah = [
-                { headerName: "Base Unit of Measure", field: "code" },
-                { headerName: "Material", field: "code" },
-                { headerName: "Material.1", field: "code" },
-                { headerName: "Movement Type", field: "code" },
-                { headerName: "Posting Date", field: "code" },
-                { headerName: "Purchase Order", field: "code" },
-            ];
-        }
-
-        setupAggrid(dataMentah[document.getElementById("slc-mentah").value], columnDefs.mentah, false);
-    }
-
-    if (agT === "subset") {
-        header.textContent = "Subset Data";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Subset Data</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.subset = [
-            { headerName: "Posting Date", field: "Posting Date", minWidth: 150 },
-            { headerName: "Material Code", field: "Material_Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "Quantity(EA)", field: "Quantity(EA)", minWidth: 150 },
-            { headerName: "Movement Type", field: "Movement Type", minWidth: 150 },
-        ];
-
-        setupAggrid(dataSubset, columnDefs.subset, false);
-    }
-
-    if (agT === "class") {
-        header.textContent = "Data Klasifikasi";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between">
-                <div class="flex gap-2 items-center text-sm">
-                    <span>Data Klasifikasi: </span>
-                    <select onchange="dataFilter(event)" class="cursor-pointer bg-transparent">
-                        <option value="">Semua</option>
-                        <option value="Deterministik">Pola Deterministik</option>
-                        <option value="Normal">Pola Normal</option>
-                        <option value="Poisson">Pola Poisson</option>
-                        <option value="Tak - Tentu">Pola Tak - Tentu</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 justify-between items-center  text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.filtered = [
-            { headerName: "Material Code", field: "Material_Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "Kategori", field: "Kategori", minWidth: 150, filter: true },
-            { headerName: "Proses 1", field: "Proses1", minWidth: 150 },
-            { headerName: "Proses 2", field: "Proses2", minWidth: 150 },
-            { headerName: "Jumlah Data", field: "Jumlah_Data", minWidth: 150 },
-            { headerName: "Rata-Rata", field: "Rata_Rata", minWidth: 150 },
-            { headerName: "Variansi", field: "Variansi", minWidth: 150 },
-            { headerName: "Standar Deviasi", field: "Standar_Deviasi", minWidth: 150 },
-            { headerName: "P Value", field: "P_Value", minWidth: 150 },
-            { headerName: "Deskripsi Pengujian Statistik", field: "Deskripsi_Pengujian_Statistik", minWidth: 150 },
-            { headerName: "Hasil Uji", field: "Hasil_uji", minWidth: 150 },
-        ];
-
-        if (dataClass.length !== 0) {
-            !processingButton.class ? (processingButton.class = "allow") : void 0;
-            if (processingButton.class === "allow") {
-                headerAction.innerHTML = `<button id="btn-process-model" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded text-xs">Proses Tiap Kategori</button>`;
-                document.getElementById("btn-process-model").addEventListener("click", () => {
-                    headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Sedang Memproses</button>`;
-                    processingButton.class = "processing";
-                    model();
-                });
-            } else if (processingButton.class === "processing") {
-                headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Sedang Memproses</button>`;
-            } else {
-                headerAction.innerHTML = `<button class="cursor-not-allowed bg-blue-500 font-semibold text-white py-2 px-4 border border-blue-500 border-transparent rounded text-xs">Proses Selesai</button>`;
-            }
-        }
-
-        setupAggrid(dataClass, columnDefs.filtered, false);
-    }
+    agT === "mentah" ? toolsMentah(header, headerAction, childContent) : "";
+    agT === "subset" ? toolsSubset(header, headerAction, childContent) : "";
+    agT === "class" ? toolsClass(header, headerAction, childContent) : "";
 
     if (agT === "q") {
         header.textContent = "Model Q (Pola Normal)";

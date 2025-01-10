@@ -137,9 +137,13 @@ const setupAggrid = async (agId, agData, agCol, agName, agView) => {
         gridApi[agName] = agGrid.createGrid(eGrid, gridOptions);
 
         // Additional UI adjustments after rendering
-        document.querySelector(".ag-paging-panel").classList.add("text-xs");
-        document.querySelector(".ag-paging-panel").style.height = "35px";
+        // try {
+        //     document.querySelector(".ag-paging-panel").classList.add("text-xs");
+        //     document.querySelector(".ag-paging-panel").style.height = "35px";
         setLoading(agView, agName);
+        // } catch (e) {
+        //     console.error(e);
+        // }
 
         cGrid.forEach((element) => {
             if (element.textContent.trim() === "Total") {
