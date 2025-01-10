@@ -38,7 +38,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const btnChevron = document.getElementById("btn-chevron");
 const childTools = document.getElementById("child-tools");
 
-let miniNavIndikacator = { status: false, nav: "13rem", tools: "13rem" };
+let miniNavIndikacator = { status: false, nav: "14rem", tools: "14rem" };
 
 // mini nav
 const miniNav = () => {

@@ -566,11 +566,12 @@ def count_and_stats_by_material(df):
                     grouped.at[idx, 'Proses2'] = 'MT'
 
     grouped['Kategori'] = grouped.apply(lambda row: 
-                                        'Pola Deterministik' if row['Proses2'] == 'MD' else 
-                                        'Pola Normal' if row['Proses2'] == 'MN' else 
-                                        'Pola Poisson' if row['Proses2'] == 'MP' else 
-                                        'Pola Tak - Tentu' if row['Proses2'] == 'MT' else None, 
-                                        axis=1)
+        'Pola Deterministik' if row['Proses2'] == 'MD' else 
+        'Pola Normal' if row['Proses2'] == 'MN' else 
+        'Pola Poisson' if row['Proses2'] == 'MP' else 
+        'Pola Non Moving' if row['Proses1'] == 'PT' else 
+        'Pola Tak - Tentu' if row['Proses2'] == 'MT' else None, 
+        axis=1)
 
     # Mengatur ulang urutan kolom
     ordered_columns = ['Material_Code', 'Kategori', 'Proses1', 'Proses2', 'Jumlah_Data', 'Rata_Rata', 'Variansi', 'Standar_Deviasi', 'P_Value', 'Deskripsi_Pengujian_Statistik', 'Hasil_uji']
@@ -591,7 +592,26 @@ def processing_classification(data):
         material_code_index = cols.index('Material_Code')
         cols.insert(material_code_index + 1, cols.pop(cols.index('Material Description')))
         Hasil_Klasifikasi = Hasil_Klasifikasi[cols]
-
+        # start contoh non moving
+        data_contoh = {
+            "Material_Code": [6002804, 6056981, 6056983],
+            "Material Description": ["Desc4", "Desc5", "Desc6"],
+            "Jumlah_Data": [25, 30, 35],
+            "Kategori": ["Pola Non Moving", "Pola Non Moving", "Pola Non Moving"],
+            "Proses1": ["PT", "PT", "PT"],
+            "Proses2": ["MD", "MD", "MD"],
+            "P_Value": [0.15, 0.25, 0.05],
+            "Variansi": [1.4, 1.6, 1.3],
+            "Rata_Rata": [15.5, 16.8, 14.9],
+            "Standar_Deviasi": [0.8, 0.9, 0.7],
+            "Hasil_uji": [None, None, None],
+            "Deskripsi_Pengujian_Statistik": ["Test4", "Test5", "Test6"]
+        }
+        df_baru = pd.DataFrame(data_contoh)
+        print(len(Hasil_Klasifikasi))
+        Hasil_Klasifikasi = pd.concat([Hasil_Klasifikasi, df_baru], ignore_index=True)
+        print(len(Hasil_Klasifikasi))
+        # end contoh non mocing
         return Hasil_Klasifikasi
     except KeyError as e:
         print(f"proses klasifikasi keyerror: {e}")
@@ -891,119 +911,238 @@ def taktentu_model(taktentu_array):
 
     return result_taktentu
 
-# belum
-def non_moving(non_moving_array):
-    # Membaca file Excel dan mendefinisikan kolom berdasarkan baris kedua (indeks 1)
-    df_verifikasi_No_Moving = pd.read_excel(
-        "20Agustus_Hasil_Hitung_Kalkulator_Stock_Holding_update_Data.xlsx", 
-        sheet_name= "No_Moving (Belum)", 
-        header=1  # Memulai pembacaan header dari baris kedua
-    )
-    df_verifikasi_No_Moving
-    # Ganti titik sebagai pemisah ribuan dengan string kosong, lalu konversi menjadi float
-    df_verifikasi_No_Moving['Stock Out Effect'] = 3_720_000_000.00
-    df_verifikasi_No_Moving
+# non moving regret
+def non_moving_regret(nonmoving_array):
+    material_code_list = []
+    for index, item in enumerate(nonmoving_array):
+        material_code_list.append(item["Material_Code"])
 
-    # Inisiasi hasil model MinMaxRegret
-    hasil_list_hasil_Model_No_Moving_MinMaxRegret = []
+    result_nonmoving = []
 
-    # Iterasi melalui DataFrame input Pola No Moving
-    for index, row in df_verifikasi_No_Moving.iterrows():
-        hasil_MinMaxRegret = Model_MinMaxRegret(
-            Ongkos_pemakaian_komponen_H= row['Unit Price'],
-            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
-            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang']  
-        )
-        
-        hasil_list_hasil_Model_No_Moving_MinMaxRegret.append(hasil_MinMaxRegret)
+    product = db.get_product_model(material_code_list)
 
-    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
-    df_hasil_Model_No_Moving_MinMaxRegret = pd.DataFrame(hasil_list_hasil_Model_No_Moving_MinMaxRegret)
+    if product[0] == "failed":
+        print("gagal")
+        return
 
-    pd.options.display.float_format = '{:,.0f}'.format
-    # Tampilkan hasil
-    df_hasil_Model_No_Moving_MinMaxRegret
+    df1 = pd.DataFrame(nonmoving_array)
+    df2 = pd.DataFrame(product[1])
 
+    df1['Material_Code'] = df1['Material_Code'].astype(str)
+    df2['p_code'] = df2['p_code'].astype(str)
 
-    # Inisiasi hasil model LinearKerusakan
-    hasil_list_hasil_Model_No_Moving_LinearKerusakan = []
+    df2_clean = df2.drop_duplicates(subset='p_code')
 
-    # Iterasi melalui DataFrame input Pola No Moving
-    for index, row in df_verifikasi_No_Moving.iterrows():
-        hasil_LinearKerusakan = model_kerusakan_linear(
-            Ongkos_pemakaian_komponen_H= row['Unit Price'],
-            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
-            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang']  
-        )
-        
-        hasil_list_hasil_Model_No_Moving_LinearKerusakan.append(hasil_LinearKerusakan)
+    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="p_code", how="left")
 
-    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
-    df_hasil_Model_No_Moving_LinearKerusakan = pd.DataFrame(hasil_list_hasil_Model_No_Moving_LinearKerusakan)
+    merged_df = merged_df.rename(columns={"p_price": "Harga Barang (p) /Unit"})
+    merged_df = merged_df.rename(columns={"p_abc": "ABC Indicator"})
 
-    pd.options.display.float_format = '{:,.0f}'.format
-    # Tampilkan hasil
-    df_hasil_Model_No_Moving_LinearKerusakan
+    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
+    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
+    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
 
-    # Inisiasi hasil model MinMaxRegret
-    hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4 = []
+    for index, row in merged_df.iterrows():
+        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
+        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
+        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
+        material_code = row["Material_Code"]
+        material_description = row["Material Description"]
+        abc_indikator = row["ABC Indicator"]
 
-    # Iterasi melalui DataFrame input Pola No Moving
-    for index, row in df_verifikasi_No_Moving.iterrows():
-        hasil_Non_LinearKerusakan_beta4 = model_kerusakan_non_linear(
-            Ongkos_pemakaian_komponen_H= row['Unit Price'],
-            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
-            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang'],
-            beta=4  
-        )
-        
-        hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4.append(hasil_Non_LinearKerusakan_beta4)
+        try:
+            result_nonmoving.append(calc.Model_MinMaxRegret(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
 
-    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
-    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4 = pd.DataFrame(hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta4)
+        except Exception as e:
+            result_nonmoving.append({
+                "Material Code": material_code,
+                "Material Description": material_description,
+                "ABC Indicator": abc_indikator,
+                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
+                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
+                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
+                "Minimum Regret (Rp )": "",
+                "Harga Resale Komponen (O)": "",
+                "Strategi Penyediaan Optimal (Unit)": "",
+            })
 
-    pd.options.display.float_format = '{:,.0f}'.format
-    # Tampilkan hasil
-    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4
+    return result_nonmoving
 
+# non moving linear
+def non_moving_linear(nonmoving_array):
+    material_code_list = []
+    for index, item in enumerate(nonmoving_array):
+        material_code_list.append(item["Material_Code"])
 
-    # Inisiasi hasil model MinMaxRegret
-    hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5 = []
+    result_nonmoving = []
 
-    # Iterasi melalui DataFrame input Pola No Moving
-    for index, row in df_verifikasi_No_Moving.iterrows():
-        hasil_Non_LinearKerusakan_beta5 = model_kerusakan_non_linear(
-            Ongkos_pemakaian_komponen_H= row['Unit Price'],
-            Ongkos_Kerugian_akibat_kerusakan_L= row['Stock Out Effect'],
-            Jumlah_komponen_terpasang_m= row['Jumlah Komponen Terpasang'],
-            beta=5  
-        )
-        
-        hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5.append(hasil_Non_LinearKerusakan_beta5)
+    product = db.get_product_model(material_code_list)
 
-    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
-    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5 = pd.DataFrame(hasil_list_hasil_Model_No_Moving_Non_LinearKerusakan_beta5)
+    if product[0] == "failed":
+        print("gagal")
+        return
 
-    pd.options.display.float_format = '{:,.0f}'.format
-    # Tampilkan hasil
-    df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5
+    df1 = pd.DataFrame(nonmoving_array)
+    df2 = pd.DataFrame(product[1])
 
-    # Tentukan folder output untuk menyimpan file
-    output_folder = "s:/Project & Research/01. Pupuk Indonesia/pi/Data Pa Bambang/Data History/Model_Kalkulator_Fixed/testfolder/output"  # Ganti dengan path folder yang diinginkan
-    filename11 = 'Data_Output_MinMaxRegret.xlsx'
-    filename12 = 'Data_Output_LinearKerusakan.xlsx'
-    filename13 = 'Data_Output_Non_LinearKerusakan_beta4.xlsx'
-    filename14 = 'Data_Output_Non_LinearKerusakan_beta4.xlsx'
+    df1['Material_Code'] = df1['Material_Code'].astype(str)
+    df2['p_code'] = df2['p_code'].astype(str)
 
+    df2_clean = df2.drop_duplicates(subset='p_code')
 
-    # # Mengekspor data gabungan dengan progres
-    # export_data_with_progress(df_hasil_Model_No_Moving_MinMaxRegret, output_folder, filename11)
-    # export_data_with_progress(df_hasil_Model_No_Moving_LinearKerusakan, output_folder, filename12)
-    # export_data_with_progress(df_hasil_Model_No_Moving_Non_LinearKerusakan_beta4, output_folder, filename13)
-    # export_data_with_progress(df_hasil_Model_No_Moving_Non_LinearKerusakan_beta5, output_folder, filename14)
+    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="p_code", how="left")
 
-# belum
+    merged_df = merged_df.rename(columns={"p_price": "Harga Barang (p) /Unit"})
+    merged_df = merged_df.rename(columns={"p_abc": "ABC Indicator"})
+
+    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
+    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
+    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
+
+    for index, row in merged_df.iterrows():
+        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
+        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
+        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
+        material_code = row["Material_Code"]
+        material_description = row["Material Description"]
+        abc_indikator = row["ABC Indicator"]
+
+        try:
+            result_nonmoving.append(calc.model_kerusakan_linear(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
+
+        except Exception as e:
+            result_nonmoving.append({
+                "Material Code": material_code,
+                "Material Description": material_description,
+                "ABC Indicator": abc_indikator,
+                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
+                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
+                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
+                "Minimum Regret (Rp )": "",
+                "Harga Resale Komponen (O)": "",
+                "Strategi Penyediaan Optimal (Unit)": "",
+            })
+
+    return result_nonmoving
+
+# non moving regret
+def non_moving_non_linear(nonmoving_array):
+    material_code_list = []
+    for index, item in enumerate(nonmoving_array):
+        material_code_list.append(item["Material_Code"])
+
+    result_nonmoving = []
+
+    product = db.get_product_model(material_code_list)
+
+    if product[0] == "failed":
+        print("gagal")
+        return
+
+    df1 = pd.DataFrame(nonmoving_array)
+    df2 = pd.DataFrame(product[1])
+
+    df1['Material_Code'] = df1['Material_Code'].astype(str)
+    df2['p_code'] = df2['p_code'].astype(str)
+
+    df2_clean = df2.drop_duplicates(subset='p_code')
+
+    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="p_code", how="left")
+
+    merged_df = merged_df.rename(columns={"p_price": "Harga Barang (p) /Unit"})
+    merged_df = merged_df.rename(columns={"p_abc": "ABC Indicator"})
+
+    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
+    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
+    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
+
+    for index, row in merged_df.iterrows():
+        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
+        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
+        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
+        material_code = row["Material_Code"]
+        material_description = row["Material Description"]
+        abc_indikator = row["ABC Indicator"]
+
+        try:
+            result_nonmoving.append(calc.model_kerusakan_non_linear(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
+
+        except Exception as e:
+            result_nonmoving.append({
+                "Material Code": material_code,
+                "Material Description": material_description,
+                "ABC Indicator": abc_indikator,
+                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
+                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
+                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
+                "Minimum Regret (Rp )": "",
+                "Harga Resale Komponen (O)": "",
+                "Strategi Penyediaan Optimal (Unit)": "",
+            })
+
+    return result_nonmoving
+
+# bcr
 def bcr(bcr_array):
+    material_code_list = []
+    for index, item in enumerate(bcr_array):
+        material_code_list.append(item["Material_Code"])
+
+    result_bcr = []
+
+    product = db.get_product_model(material_code_list)
+
+    if product[0] == "failed":
+        print("gagal")
+        return
+
+    df1 = pd.DataFrame(bcr_array)
+    df2 = pd.DataFrame(product[1])
+
+    df1['Material_Code'] = df1['Material_Code'].astype(str)
+    df2['p_code'] = df2['p_code'].astype(str)
+
+    df2_clean = df2.drop_duplicates(subset='p_code')
+
+    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="p_code", how="left")
+
+    merged_df = merged_df.rename(columns={"p_price": "Harga Barang (p) /Unit"})
+    merged_df = merged_df.rename(columns={"p_abc": "ABC Indicator"})
+
+    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
+    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
+    merged_df.loc[:, 'Suku Bunga'] = 10
+    merged_df.loc[:, 'Sisa Tahun Pemakaian'] = 5
+
+    for index, row in merged_df.iterrows():
+        harga_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
+        Kerugian_Komponen_Co = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
+        suku_bunga = int(row["Suku Bunga"]) if not pd.isna(row["Suku Bunga"]) else 0
+        waktu_sisa_operasi = int(row["Sisa Tahun Pemakaian"]) if not pd.isna(row["Sisa Tahun Pemakaian"]) else 0
+        material_code = row["Material_Code"]
+        material_description = row["Material Description"]
+        abc_indikator = row["ABC Indicator"]
+
+        try:
+            result_bcr.append(calc.Model_Inventori_BCR(harga_komponen,Kerugian_Komponen_Co,suku_bunga,waktu_sisa_operasi,material_code,material_description,abc_indikator))
+
+        except Exception as e:
+            result_bcr.append({
+                "Material Code": material_code,
+                "Material Description": material_description,
+                "ABC Indicator": abc_indikator,
+                "Harga Komponen (Ho)": harga_komponen,
+                "Kerugian Komponen (Co)": Kerugian_Komponen_Co,
+                "Suku Bunga (i)": suku_bunga,
+                "Waktu Sisa Operasi (tahun)": waktu_sisa_operasi,
+                "Benefit-Cost Ratio (BCR)": "",
+                "Strategi Penyediaan Optimal (Tahun)": "",
+                "Jenis Probabilitas": "",
+                "Pesan": "Tidak ada pembelian sparepart yang direkomendasikan",
+            })
+
+    return result_bcr
+
     # Membaca file Excel dan mendefinisikan kolom berdasarkan baris kedua (indeks 1)
     df_verifikasi_Model_BCR = pd.read_excel(
         "20Agustus_Hasil_Hitung_Kalkulator_Stock_Holding_update_Data.xlsx", 
@@ -1050,8 +1189,17 @@ def processing_model(dataframe):
         "deterministik": df[df['Kategori'] == 'Pola Deterministik'].to_dict(orient='records'),
         "normal": df[df['Kategori'] == 'Pola Normal'].to_dict(orient='records'),
         "poisson": df[df['Kategori'] == 'Pola Poisson'].to_dict(orient='records'),
-        "taktentu": df[df['Kategori'] == 'Pola Tak - Tentu'].to_dict(orient='records')
+        "taktentu": df[df['Kategori'] == 'Pola Tak - Tentu'].to_dict(orient='records'),
+        "nonmoving": df[df['Kategori'] == 'Pola Non Moving'].to_dict(orient='records')
     }
+
+    result["bcr"] = (
+        result["deterministik"]
+        + result["normal"]
+        + result["poisson"]
+        + result["taktentu"]
+        + result["nonmoving"]
+    )
 
     deterministik_array = result["deterministik"]
     print(f"data model deterministik awal: {len(deterministik_array)}")
@@ -1081,13 +1229,42 @@ def processing_model(dataframe):
         result_taktentu = taktentu_model(taktentu_array)
         print(f"berhasil model tak tentu {len(result_taktentu)}")
 
+    nonmoving_array = result["nonmoving"]
+
+    print(f"data model non moving awal: {len(nonmoving_array)}")
+    result_nonmovingregret = []
+    if len(nonmoving_array) != 0:
+        result_nonmovingregret = non_moving_regret(nonmoving_array)
+        print(f"berhasil model regret {len(result_nonmovingregret)}")
+
+    result_nonmovinglinear = []
+    if len(nonmoving_array) != 0:
+        result_nonmovinglinear = non_moving_linear(nonmoving_array)
+        print(f"berhasil model linear {len(result_nonmovinglinear)}")
+
+    result_nonmovingnonlinear = []
+    if len(nonmoving_array) != 0:
+        result_nonmovingnonlinear = non_moving_non_linear(nonmoving_array)
+        print(f"berhasil model non linear {len(result_nonmovingnonlinear)}")
+
+    bcr_array = result["bcr"]
+    print(f"data model bcr awal: {len(bcr_array)}")
+    result_bcr = []
+    if len(bcr_array) != 0:
+        result_bcr = bcr(bcr_array)
+        print(f"berhasil model bcr {len(result_bcr)}")
+
     print("selesai semua model")
 
     results = {
         "wilson": result_deterministik,
         "q": result_normal,
         "poisson": result_poisson,
-        "tchebycheff": result_taktentu
+        "tchebycheff": result_taktentu,
+        "nonmovingregret": result_nonmovingregret,
+        "nonmovinglinear": result_nonmovinglinear,
+        "nonmovingnonlinear": result_nonmovingnonlinear,
+        "bcr": result_bcr,
     }
 
     for key in results:

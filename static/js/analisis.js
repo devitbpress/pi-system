@@ -53,12 +53,13 @@ let dataMentah = {};
 let idProduct = 1;
 let dataSubset = [];
 let dataClass = {};
-// let dataModel = {};
-// let processingButton = {};
-// let intElement = "new";
+let dataModel = {};
 
 const runAllFile = async () => {
     fileOnProcess = false;
+
+    const indikatorProses = ["subset", "class", "int-q", "int-wilson", "int-poisson", "int-tchebycheff", "int-regret", "int-linear", "int-non-linear", "int-bcr"];
+    indikatorProses.forEach((item) => indikatorNavigation(item, "P"));
 
     const response = await await postFetch("/api/get/analysis/proses", { session: session });
     if (response[0] !== "processing") {
@@ -75,6 +76,8 @@ const runAllFile = async () => {
         }
     } while (merge.status !== "success");
     dataSubset = merge.data;
+    indikatorNavigation("subset", "P");
+    tools("subset");
 
     let classification;
     do {
@@ -88,6 +91,8 @@ const runAllFile = async () => {
         !dataClass[item.Kategori] ? (dataClass[item.Kategori] = []) : "";
         dataClass[item.Kategori].push(item);
     });
+    indikatorNavigation("class", "P");
+    tools("class");
 
     let model;
     do {
@@ -97,8 +102,9 @@ const runAllFile = async () => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (model.status !== "success");
-
-    console.log(model);
+    dataModel = model.data;
+    indikatorProses.forEach((item) => indikatorNavigation(item, "D"));
+    tools("q");
 };
 
 const uploadFile = async (index) => {
@@ -202,30 +208,44 @@ const aggridSheet = (agD) => {
 
 const aggridSheetClass = (agD) => {
     const data = dataClass[agD];
-    const dataPola = { "Pola Tak - Tentu": "taktentu", "Pola Deterministik": "deterministik", "Pola Poisson": "poisson", "Pola Normal": "Normal" };
+    const dataPola = { "Pola Tak - Tentu": "tchebycheff", "Pola Deterministik": "wilson", "Pola Poisson": "poisson", "Pola Normal": "q", "Pola Non Moving": "nonmoving" };
     const aggridId = `class-${dataPola[agD]}`;
 
     document.querySelectorAll(".sheet-aggrid-tag").forEach((item) => item.classList.remove("bg-blue-50", "text-blue-700"));
     document.getElementById(`sheet-${dataPola[agD]}`).classList.add("bg-blue-50", "text-blue-700");
 
-    columnDefs[aggridId] = [];
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return 0;
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
-    columnDefs.filtered = [
-        { headerName: "Material Code", field: "Material_Code", minWidth: 150 },
-        { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-        { headerName: "Kategori", field: "Kategori", minWidth: 150, filter: true },
-        { headerName: "Proses 1", field: "Proses1", minWidth: 150 },
-        { headerName: "Proses 2", field: "Proses2", minWidth: 150 },
-        { headerName: "Jumlah Data", field: "Jumlah_Data", minWidth: 150 },
-        { headerName: "Rata-Rata", field: "Rata_Rata", minWidth: 150 },
-        { headerName: "Variansi", field: "Variansi", minWidth: 150 },
-        { headerName: "Standar Deviasi", field: "Standar_Deviasi", minWidth: 150 },
-        { headerName: "P Value", field: "P_Value", minWidth: 150 },
-        { headerName: "Deskripsi Pengujian Statistik", field: "Deskripsi_Pengujian_Statistik", minWidth: 150 },
-        { headerName: "Hasil Uji", field: "Hasil_uji", minWidth: 150 },
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    const valueGetterGrid = (params) => {
+        const value = params.data["Variansi"];
+        return isNaN(value) || value === "" ? 0 : value;
+    };
+
+    columnDefs[aggridId] = [
+        { headerName: "Material_Code", field: "Material_Code", minWidth: 140 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 200 },
+        { headerName: "Jumlah_Data", field: "Jumlah_Data", minWidth: 130, cellClass: "justify-center" },
+        { headerName: "Kategori", field: "Kategori", minWidth: 110 },
+        { headerName: "Proses1", field: "Proses1", minWidth: 100 },
+        { headerName: "Proses2", field: "Proses2", minWidth: 100 },
+        { headerName: "P_Value", field: "P_Value", minWidth: 100, cellClass: "justify-end", valueGetter: (params) => valueGetterGrid(params), valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Variansi", field: "Variansi", minWidth: 110, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Rata_Rata", field: "Rata_Rata", minWidth: 120, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar_Deviasi", field: "Standar_Deviasi", minWidth: 150, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Hasil_uji", field: "Hasil_uji", minWidth: 120 },
+        { headerName: "Deskripsi_Pengujian_Statistik", field: "Deskripsi_Pengujian_Statistik", minWidth: 250 },
     ];
 
-    console.log(data);
     datasetAgGrid[aggridId] = data;
 
     document.getElementById("btnCsv").setAttribute("data", aggridId);
@@ -320,15 +340,15 @@ const toolsMentah = (header, headerAction, childContent) => {
 
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
             <div class="w-full flex justify-between text-sm">
-                <div class="flex gap-2 items-center"></div>
-                <div class="flex gap-2 justify-between items-center">
+                <div class="flex gap-2 items-center">Data Mentah</div>
+                <div class="flex gap-2 justify-between items-center text-xs">
                     <span>Cari Data</span>
                     <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
                     <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
                 </div>
             </div>
             <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
-            <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
+            <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll pb-2"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
         </div>`;
 
     if (Object.keys(dataMentah).length > 0) {
@@ -337,6 +357,16 @@ const toolsMentah = (header, headerAction, childContent) => {
         Object.values(dataMentah).forEach((item) => (sheet.innerHTML += `<div id="sheet-${item.id}" onclick="aggridSheet(${item.id})" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item.name}</div>`));
         thisIdhasil = Object.keys(dataMentah)[0];
         aggridSheet(thisIdhasil);
+    } else {
+        columnDefs["kosong"] = [
+            { headerName: "Posting Date", field: "Posting Date", minWidth: 150, maxWidth: 150, valueGetter: (params) => aggridValueGetter(params), valueFormatter: (params) => aggridValueFormatter(params) },
+            { headerName: "Material Code", field: "Material_Code", minWidth: 150, maxWidth: 150 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
+            { headerName: "Quantity(EA)", field: "Quantity(EA)", minWidth: 150, maxWidth: 150, cellClass: "justify-center", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+            { headerName: "Movement Type", field: "Movement Type", minWidth: 150, maxWidth: 150, cellClass: "justify-center" },
+        ];
+
+        setupAggrid(`aggrid-mentah`, datasetAgGrid["kosong"], columnDefs["kosong"], "kosong");
     }
 };
 
@@ -348,7 +378,7 @@ const toolsSubset = (header, headerAction, childContent) => {
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
         <div class="w-full flex justify-between text-sm">
             <div>Subset Data</div>
-            <div class="flex gap-2 justify-between items-center">
+            <div class="flex gap-2 justify-between items-center text-xs">
                 <span>Cari Data</span>
                 <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
                 <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
@@ -382,8 +412,8 @@ const toolsSubset = (header, headerAction, childContent) => {
         { headerName: "Posting Date", field: "Posting Date", minWidth: 150, maxWidth: 150, valueGetter: (params) => aggridValueGetter(params), valueFormatter: (params) => aggridValueFormatter(params) },
         { headerName: "Material Code", field: "Material_Code", minWidth: 150, maxWidth: 150 },
         { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-        { headerName: "Quantity(EA)", field: "Quantity(EA)", minWidth: 150, maxWidth: 150, valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-        { headerName: "Movement Type", field: "Movement Type", minWidth: 150, maxWidth: 150 },
+        { headerName: "Quantity(EA)", field: "Quantity(EA)", minWidth: 150, maxWidth: 150, cellClass: "justify-center", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Movement Type", field: "Movement Type", minWidth: 150, maxWidth: 150, cellClass: "justify-center" },
     ];
 
     if (dataSubset.length > 0) {
@@ -401,24 +431,440 @@ const toolsClass = (header, headerAction, childContent) => {
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
         <div class="w-full flex justify-between">
             <div class="flex gap-2 items-center text-sm"></div>
-            <div class="flex gap-2 justify-between items-center  text-xs">
+            <div class="flex gap-2 justify-between items-center text-xs">
                 <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
-        <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
+        <div class="bottom-0 left-0 px-2 border-t w-full overflow-x-scroll pb-2"><div id="sheet-aggrid" class="flex w-fit text-sm"></div></div>
     </div>`;
 
     if (Object.keys(dataClass).length > 0) {
         const sheet = document.getElementById("sheet-aggrid");
         sheet.innerHTML = "";
-        const dataPola = { "Pola Tak - Tentu": "taktentu", "Pola Deterministik": "deterministik", "Pola Poisson": "poisson", "Pola Normal": "Normal" };
-        Object.keys(dataClass).forEach((item) => (sheet.innerHTML += `<div id="sheet-${dataPola[item]}" onclick="aggridSheetClass('${item}')" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item}</div>`));
-        thisIdhasil = Object.keys(dataClass)[0];
-        aggridSheetClass(thisIdhasil);
+        const dataPola = { "Pola Tak - Tentu": "tchebycheff", "Pola Deterministik": "wilson", "Pola Poisson": "poisson", "Pola Normal": "q", "Pola Non Moving": "nonmoving" };
+        const nameSheet = ["Pola Deterministik", "Pola Poisson", "Pola Normal", "Pola Tak - Tentu", "Pola Non Moving"];
+        nameSheet.forEach((item) => (sheet.innerHTML += `<div id="sheet-${dataPola[item]}" onclick="aggridSheetClass('${item}')" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item}</div>`));
+        aggridSheetClass("Pola Deterministik");
+    } else {
+        columnDefs["kosong"] = [
+            { headerName: "Material_Code", field: "Material_Code", minWidth: 140 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
+            { headerName: "Jumlah_Data", field: "Jumlah_Data", minWidth: 130, cellClass: "justify-center" },
+            { headerName: "Kategori", field: "Kategori", minWidth: 110 },
+            { headerName: "Proses1", field: "Proses1", minWidth: 100 },
+            { headerName: "Proses2", field: "Proses2", minWidth: 100 },
+            { headerName: "P_Value", field: "P_Value", minWidth: 100, cellClass: "justify-end", valueGetter: (params) => valueGetterGrid(params), valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+            { headerName: "Variansi", field: "Variansi", minWidth: 110, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+            { headerName: "Rata_Rata", field: "Rata_Rata", minWidth: 120, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+            { headerName: "Standar_Deviasi", field: "Standar_Deviasi", minWidth: 150, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+            { headerName: "Hasil_uji", field: "Hasil_uji", minWidth: 120 },
+            { headerName: "Deskripsi_Pengujian_Statistik", field: "Deskripsi_Pengujian_Statistik", minWidth: 250 },
+        ];
+
+        setupAggrid(`aggrid-class`, datasetAgGrid["kosong"], columnDefs["kosong"], "kosong");
     }
+};
+
+const toolsQ = (header, headerAction, childContent) => {
+    const aggridId = "modelq";
+    header.textContent = "Model Q (Pola Normal)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Q</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Rata - Rata Permintaan Barang (D) Unit/Tahun", field: "Rata - Rata Permintaan Barang (D) Unit/Tahun", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 355, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", field: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Safety Stock (SS) Unit", field: "Safety Stock (SS) Unit", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 185, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kekurangan Inventori (Ok) /Tahun", field: "Ongkos Kekurangan Inventori (Ok) /Tahun", minWidth: 300, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", field: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", minWidth: 350, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", field: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", minWidth: 400, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", field: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", minWidth: 420, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.q;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsWilson = (header, headerAction, childContent) => {
+    const aggridId = "modelwilson";
+    header.textContent = "Model Wilson (Pola Deterministik)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Wilson</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 165 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Permintaan Barang (D) Unit/Tahun", field: "Permintaan Barang (D) Unit/Tahun", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 175, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 175, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lot Pengadaan (EOQ) Unit/Pesanan", field: "Lot Pengadaan (EOQ) Unit/Pesanan", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Selang Waktu Pesan Kembali (Hari)", field: "Selang Waktu Pesan Kembali (Hari)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Selang Waktu Pesan Kembali (Bulan)", field: "Selang Waktu Pesan Kembali (Bulan)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Selang Waktu Pesan Kembali (Tahun)", field: "Selang Waktu Pesan Kembali (Tahun)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.wilson;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsPoisson = (header, headerAction, childContent) => {
+    const aggridId = "modelpoisson";
+    header.textContent = "Model Poisson (Pola Poisson)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Poisson</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 155 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Rata-Rata Permintaan Barang (D) Unit/Tahun", field: "Rata-Rata Permintaan Barang (D) Unit/Tahun", minWidth: 310, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 340, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 165, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", field: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", minWidth: 320, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Nilai Alpha", field: "Nilai Alpha", minWidth: 100, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Service Level (%)", field: "Service Level (%)", minWidth: 140, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Safety Stock (SS) Unit", field: "Safety Stock (SS) Unit", minWidth: 165, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 175, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Economic Order Quantity (EOQ) Lot Optimum (qo1)", field: "Economic Order Quantity (EOQ) Lot Optimum (qo1)", minWidth: 335, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar Deviasi Waktu Ancang - Ancang (SL) Unit/Tahun", field: "Standar Deviasi Waktu Ancang - Ancang (SL) Unit/Tahun", minWidth: 370, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.poisson;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsTchebycheff = (header, headerAction, childContent) => {
+    const aggridId = "modeltchebycheff";
+    header.textContent = "Model Tchebycheff (Pola Tak - Tentu)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Tchebycheff</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 165, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Kerugian Ketidakadaan Barang (Cu) /Unit", field: "Kerugian Ketidakadaan Barang (Cu) /Unit", minWidth: 280, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Standar Deviasi Permintaan Barang (s)", field: "Standar Deviasi Permintaan Barang (s)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Rata-Rata Permintaan Barang (alpha)", field: "Rata-Rata Permintaan Barang (alpha)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Nilai K Model Tchebycheff", field: "Nilai K Model Tchebycheff", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Lot Pemesanan Optimal (q0)", field: "Lot Pemesanan Optimal (q0)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.tchebycheff;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsRegret = (header, headerAction, childContent) => {
+    const aggridId = "modelRegret";
+    header.textContent = "Model Regret (Pola Non Moving)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Regret</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Minimum Regret (Rp )", field: "Minimum Regret (Rp )", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.nonmovingregret;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsLinear = (header, headerAction, childContent) => {
+    const aggridId = "modellinear";
+    header.textContent = "Model Linear (Pola Non Moving)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Linear</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.nonmovinglinear;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsNonLinear = (header, headerAction, childContent) => {
+    const aggridId = "modelnonlinear";
+    header.textContent = "Model Non Linear (Pola Non Moving)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between text-sm">
+            <div>Data Hasil Model Non Linear</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 20, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.nonmovingnonlinear;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
+};
+
+const toolsBcr = (header, headerAction, childContent) => {
+    const aggridId = "modelbcr";
+    header.textContent = "Model BCR (Pola BCR)";
+    headerAction.innerHTML = "";
+
+    const returnFloat = (params) => {
+        const num = params.value;
+        if (!num) {
+            return "";
+        }
+        return parseFloat(num).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const comparatorGrid = (valueA, valueB) => {
+        return valueA - valueB;
+    };
+
+    childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
+        <div class="w-full flex justify-between  text-sm">
+            <div>Data Hasil Model BCR</div>
+            <div class="flex gap-2 justify-between items-center  text-xs">
+                <span>Cari Data</span>
+                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+            </div>
+        </div>
+        <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
+    </div>`;
+
+    columnDefs[aggridId] = [
+        { headerName: "Material Code", field: "Material Code", minWidth: 120 },
+        { headerName: "Material Description", field: "Material Description", minWidth: 185 },
+        { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
+        { headerName: "Harga Komponen (Ho)", field: "Harga Komponen (Ho)", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Kerugian Komponen (Co)", field: "Kerugian Komponen (Co)", minWidth: 195, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Suku Bunga (i)", field: "Suku Bunga (i)", minWidth: 130, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Waktu Sisa Operasi (tahun)", field: "Waktu Sisa Operasi (tahun)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Jenis Probabilitas", field: "Jenis Probabilitas", minWidth: 160 },
+        { headerName: "Benefit-Cost Ratio (BCR)", field: "Benefit-Cost Ratio (BCR)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Strategi Penyediaan Optimal (Tahun)", field: "Strategi Penyediaan Optimal (Tahun)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Pesan", field: "Pesan", minWidth: 270 },
+    ];
+
+    datasetAgGrid[aggridId] = dataModel.bcr;
+
+    setupAggrid(`aggrid-${aggridId}`, datasetAgGrid[aggridId], columnDefs[aggridId], aggridId);
 };
 
 const tools = (agT) => {
@@ -448,419 +894,15 @@ const tools = (agT) => {
     agT === "mentah" ? toolsMentah(header, headerAction, childContent) : "";
     agT === "subset" ? toolsSubset(header, headerAction, childContent) : "";
     agT === "class" ? toolsClass(header, headerAction, childContent) : "";
-
-    if (agT === "q") {
-        header.textContent = "Model Q (Pola Normal)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Q</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.q = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Rata - Rata Permintaan Barang (D) Unit/Tahun", field: "Rata - Rata Permintaan Barang (D) Unit/Tahun", minWidth: 150 },
-            { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 150 },
-            { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150 },
-            { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 150 },
-            { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 150 },
-            { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 150 },
-            { headerName: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", field: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", minWidth: 150 },
-            { headerName: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", field: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", minWidth: 150 },
-            { headerName: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", field: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", minWidth: 150 },
-            { headerName: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", field: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", minWidth: 150 },
-            { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 150 },
-            { headerName: "Safety Stock (SS) Unit", field: "Safety Stock (SS) Unit", minWidth: 150 },
-            { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 150 },
-            { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Kekurangan Inventori (Ok) /Tahun", field: "Ongkos Kekurangan Inventori (Ok) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.q, columnDefs.q, false);
-    }
-
-    if (agT === "wilson") {
-        header.textContent = "Model Wilson (Pola Deterministik)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Wilson</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.wilson = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Permintaan Barang (D) Unit/Tahun", field: "Permintaan Barang (D) Unit/Tahun", minWidth: 150 },
-            { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 150 },
-            { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 150 },
-            { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150 },
-            { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 150 },
-            { headerName: "Lot Pengadaan (EOQ) Unit/Pesanan", field: "Lot Pengadaan (EOQ) Unit/Pesanan", minWidth: 150 },
-            { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 150 },
-            { headerName: "Selang Waktu Pesan Kembali (Tahun)", field: "Selang Waktu Pesan Kembali (Tahun)", minWidth: 150 },
-            { headerName: "Selang Waktu Pesan Kembali (Bulan)", field: "Selang Waktu Pesan Kembali (Bulan)", minWidth: 150 },
-            { headerName: "Selang Waktu Pesan Kembali (Hari)", field: "Selang Waktu Pesan Kembali (Hari)", minWidth: 150 },
-            { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 150 },
-            { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 150 },
-            { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.wilson, columnDefs.wilson, false);
-    }
-
-    if (agT === "poisson") {
-        header.textContent = "Model Poisson (Pola Poisson)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Poisson</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.poisson = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Rata - Rata Permintaan Barang (D) Unit/Tahun", field: "Rata - Rata Permintaan Barang (D) Unit/Tahun", minWidth: 150 },
-            { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 150 },
-            { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150 },
-            { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 150 },
-            { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 150 },
-            { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 150 },
-            { headerName: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", field: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", minWidth: 150 },
-            { headerName: "Nilai Alpha", field: "Nilai Alpha", minWidth: 150 },
-            { headerName: "Standar Deviasi Waktu Ancang - Ancang (SL) Unit/Tahun", field: "Standar Deviasi Waktu Ancang - Ancang (SL) Unit/Tahun", minWidth: 150 },
-            { headerName: "Economic Order Quantity (EOQ) Lot Optimum (qo1)", field: "Economic Order Quantity (EOQ) Lot Optimum (qo1)", minWidth: 150 },
-            { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 150 },
-            { headerName: "Safety Stock (SS) Unit", field: "Safety Stock (SS) Unit", minWidth: 150 },
-            { headerName: "Service Level (%)", field: "Service Level (%)", minWidth: 150 },
-            { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.poisson, columnDefs.poisson, false);
-    }
-
-    if (agT === "tchebycheff") {
-        header.textContent = "Model Tchebycheff (Pola Tak - Tentu)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Tchebycheff</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.tchebycheff = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 150 },
-            { headerName: "Kerugian Ketidakadaan Barang (Cu) /Unit", field: "Kerugian Ketidakadaan Barang (Cu) /Unit", minWidth: 150 },
-            { headerName: "Standar Deviasi Permintaan Barang (s)", field: "Standar Deviasi Permintaan Barang (s)", minWidth: 150 },
-            { headerName: "Rata - Rata Permintaan Barang (alpha)", field: "Rata - Rata Permintaan Barang (alpha)", minWidth: 150 },
-            { headerName: "Nilai K Model Tchebycheff", field: "Nilai K Model Tchebycheff", minWidth: 150 },
-            { headerName: "Lot Pemesanan Optimal (q0)", field: "Lot Pemesanan Optimal (q0)", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.tchebycheff, columnDefs.tchebycheff, false);
-    }
-
-    if (agT === "regret") {
-        header.textContent = "Model Regret (Pola Non Moving)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Regret</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.regret = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 150 },
-            { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 150 },
-            { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 150 },
-            { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 150 },
-            { headerName: "Minimum Regret (Rp )", field: "Minimum Regret (Rp )", minWidth: 150 },
-            { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.regret, columnDefs.regret, false);
-    }
-
-    if (agT === "linear") {
-        header.textContent = "Model Linear (Pola Non Moving)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Linear</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.linear = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 150 },
-            { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 150 },
-            { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 150 },
-            { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 150 },
-            { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 150 },
-            { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.linear, columnDefs.linear, false);
-    }
-
-    if (agT === "non-linear") {
-        header.textContent = "Model Non Linear (Pola Non Moving)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between text-sm">
-                <div>Data Hasil Model Non Linear</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.nonlinear = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 150 },
-            { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 150 },
-            { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 150 },
-            { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 150 },
-            { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 150 },
-            { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.nonlinear, columnDefs.nonlinear, false);
-    }
-
-    if (agT === "bcr") {
-        header.textContent = "Model BCR (Pola BCR)";
-        headerAction.innerHTML = "";
-
-        childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
-            <div class="w-full flex justify-between  text-sm">
-                <div>Data Hasil Model BCR</div>
-                <div class="flex gap-2 justify-between items-center text-xs">
-                    <span>Cari Data</span>
-                    <input oninput="inpSearch(event)" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                    <button onclick="downloadCsv()" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
-                </div>
-            </div>
-            <div id="aggrid-website" class="ag-theme-quartz w-full h-full"></div>
-        </div>`;
-
-        columnDefs.bcr = [
-            { headerName: "Material Code", field: "Material Code", minWidth: 150 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 150 },
-            { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 150 },
-            { headerName: "Harga Komponen (Ho)", field: "Harga Komponen (Ho)", minWidth: 150 },
-            { headerName: "Kerugian Komponen (Co)", field: "Kerugian Komponen (Co)", minWidth: 150 },
-            { headerName: "Suku Bunga (i)", field: "Suku Bunga (i)", minWidth: 150 },
-            { headerName: "Waktu Sisa Operasi (tahun)", field: "Waktu Sisa Operasi (tahun)", minWidth: 150 },
-            { headerName: "Benefit-Cost Ratio (BCR)", field: "Benefit-Cost Ratio (BCR)", minWidth: 150 },
-            { headerName: "Strategi Penyediaan Optimal (Tahun)", field: "Strategi Penyediaan Optimal (Tahun)", minWidth: 150 },
-            { headerName: "Jenis Probabilitas", field: "Jenis Probabilitas", minWidth: 150 },
-            { headerName: "Pesan", field: "Pesan", minWidth: 150 },
-        ];
-
-        setupAggrid(dataModel.bcr, columnDefs.bcr, false);
-    }
+    agT === "q" ? toolsQ(header, headerAction, childContent) : "";
+    agT === "wilson" ? toolsWilson(header, headerAction, childContent) : "";
+    agT === "poisson" ? toolsPoisson(header, headerAction, childContent) : "";
+    agT === "tchebycheff" ? toolsTchebycheff(header, headerAction, childContent) : "";
+    agT === "regret" ? toolsRegret(header, headerAction, childContent) : "";
+    agT === "linear" ? toolsLinear(header, headerAction, childContent) : "";
+    agT === "non-linear" ? toolsNonLinear(header, headerAction, childContent) : "";
+    agT === "bcr" ? toolsBcr(header, headerAction, childContent) : "";
 };
-
-// const subset = async () => {
-//     indikatorNavigation("mentah", "P");
-//     intElement = "old";
-//     let lengData = 0;
-
-//     if (!upProxFile) {
-//         return;
-//     } else {
-//         upProxFile = false;
-//         lblFile.style.cursor = "not-allowed";
-//         inpFile.disabled = true;
-//     }
-
-//     Object.values(dataMentah).map((item) => (lengData += item.length));
-
-//     let times = Object.values(dataMentah).reduce((sum, data) => sum + data.length, 0) * 2;
-//     const idProgress = progresBar("Filterisasi Data", "Normalisasi data Input Histori Good Issue (GI)", times);
-
-//     const responseSubset = await postFetch("subset", { session: sId });
-
-//     if (responseSubset[0] !== "processing") {
-//         notification("show", "Gagal mengolah data", "failed");
-//         sInterval[idProgress] = "done";
-//         return;
-//     }
-
-//     let intervalId;
-//     const pollSubset = () => {
-//         intervalId = setInterval(async () => {
-//             try {
-//                 const getSubset = await postFetch("/get-result-subset", { session: sId });
-
-//                 if (getSubset[0] === "success") {
-//                     clearInterval(intervalId);
-//                     sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-
-//                     dataSubset = getSubset[1];
-//                     indikatorNavigation("mentah", "D");
-//                     tools("subset");
-//                     processingButton.mentah = "done";
-//                     filtered();
-//                 } else {
-//                     console.log("Masih memproses...");
-//                 }
-//             } catch (error) {
-//                 console.error("Error:", error);
-//                 clearInterval(intervalId);
-//             }
-//         }, 3000);
-//     };
-
-//     pollSubset();
-// };
-
-// const filtered = async () => {
-//     let times = dataSubset.length;
-//     indikatorNavigation("subset", "P");
-
-//     const idProgress = progresBar("Filterisasi Data", "Filtering data Histori Good Issue (GI)", times);
-
-//     const responseClass = await postFetch("classification", { session: sId });
-
-//     if (responseClass[0] !== "success") {
-//         notification("show", "Gagal mengolah data", "failed");
-//         sInterval[idProgress] = "done";
-//         return;
-//     }
-
-//     sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-
-//     upProxFile = true;
-//     lblFile.style.cursor = "pointer";
-//     inpFile.disabled = false;
-
-//     dataClass = responseClass[1];
-//     processingButton.class = "allow";
-//     indikatorNavigation("subset", "D");
-//     indikatorNavigation("class", "D");
-//     tools("class");
-// };
-
-// const model = async () => {
-//     let times = dataClass.length;
-//     indikatorNavigation("class", "P");
-
-//     if (!upProxFile) {
-//         return;
-//     } else {
-//         upProxFile = false;
-//         lblFile.style.cursor = "not-allowed";
-//         inpFile.disabled = true;
-//     }
-
-//     const idProgress = progresBar("Filterisasi Data", "Filtering data Histori Good Issue (GI)", times);
-
-//     const responseModel = await postFetch("model-to-calc", { session: sId });
-
-//     if (responseModel[0] !== "success") {
-//         notification("show", "Gagal mengolah data", "failed");
-//         sInterval[idProgress] = "done";
-//         processingButton.class = "done";
-
-//         upProxFile = true;
-//         lblFile.style.cursor = "pointer";
-//         inpFile.disabled = false;
-//         return;
-//     }
-
-//     sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-
-//     dataModel = responseModel[1];
-//     indikatorNavigation("class", "D");
-//     Object.entries(dataModel).map((item) => (item[1].length !== 0 ? (indikatorNavigation(item[0], "D"), tools(item[0])) : void 0));
-//     processingButton.class = "done";
-
-//     upProxFile = true;
-//     lblFile.style.cursor = "pointer";
-//     inpFile.disabled = false;
-// };
-
-// const dataFilter = (event) => {
-//     gridApi.setFilterModel({
-//         Kategori: {
-//             type: "contains",
-//             filter: event.target.value,
-//         },
-//     });
-
-//     gridApi.onFilterChanged();
-// };
-
-// const inpSearch = (event) => searchData(event.target.value);
 
 document.addEventListener("DOMContentLoaded", async () => {
     setHeight();
