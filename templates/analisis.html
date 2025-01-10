@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='vendors/aggrid.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='vendors/aggrid-quartz.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+        <script src="{{ url_for('static', filename='js/session.js') }}"></script>
     </head>
     <body>
         <div id="container" class="w-ful flex">
@@ -28,7 +29,7 @@
                     <div class="h-10"></div>
                     <a href="./analisis" class="flex items-center gap-4 w-full h-14 py-3 px-4 bg-sky-50 cursor-pointer duration-150">
                         <img src="{{ url_for('static', filename='assets/statistic-blue.png') }}" alt="statistic" class="h-6 w-fit" />
-                        <span class="text-blue-700">Kalkulasi</span>
+                        <span class="text-blue-700">Analisis</span>
                     </a>
                     <a href="./kalkulator" class="flex items-center gap-4 w-full h-14 py-3 px-4 hover:bg-sky-50 cursor-pointer duration-150 group">
                         <img src="{{ url_for('static', filename='assets/calc-blue.png') }}" alt="kalkulator" class="h-6 w-fit hidden group-hover:block" />
@@ -49,7 +50,7 @@
 
                         <div id="account-option" class="absolute hidden group-hover:flex flex-col w-[9.5rem] left-0 bottom-0">
                             <div class="flex flex-col shadow bg-white rounded-xl border w-full p-2">
-                                <a href="./logout" class="flex gap-4 p-2 hover:bg-sky-100 rounded-lg duration-150">
+                                <a href="./keluar" class="flex gap-4 p-2 hover:bg-sky-100 rounded-lg duration-150">
                                     <img src="{{ url_for('static', filename='assets/logout-blue.png') }}" alt="png" class="h-5 w-fit" />
                                     <p class="whitespace-nowrap">Keluar</p>
                                 </a>
@@ -62,7 +63,7 @@
 
             <!-- tools -->
             <div class="w-56 h-full bg-white shadow border flex flex-col gap-4 py-4 duration-300">
-                <h1 class="text-xl font-semibold text-blue-900 px-2">Kalkulasi</h1>
+                <h1 class="text-xl font-semibold text-blue-900 px-2">Analisis Model</h1>
 
                 <div class="h-[calc(100%-3rem)] w-full overflow-y-scroll">
                     <div id="child-tools" class="flex flex-col text-xs text-gray-800">

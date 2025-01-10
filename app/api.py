@@ -2,11 +2,25 @@ import pandas as pd
 import threading
 
 from flask import Blueprint, request, jsonify
-from app import utils
+from app import utils, db
 
 bp_api = Blueprint('api', __name__)
 
 result_all = {}
+
+#  autentikasi
+@bp_api.route("/api/masuk", methods=['POST'])
+def get_masuk():
+    try:
+        email = request.json.get('email', "")
+        password = request.json.get('password', "")
+
+        user = db.get_user(email, password)
+
+        return jsonify(user)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @bp_api.route('/api/get/calc/manual', methods=['POST'])
 def get_calc_manual():
@@ -104,6 +118,8 @@ def delete_file_analysis():
 def get_processing():
     try:
         session = request.json.get("session")
+        if session in result_all:
+            del result_all[session]
 
         def background_process(session):
             result_merge = utils.processing_merge(session)
@@ -129,6 +145,19 @@ def get_processing():
     except Exception as e:
         return jsonify(['error', str(e)]), 500
 
+@bp_api.route('/api/get/product', methods=['POST'])
+def get_product():
+    data = request.json
+    try:
+        result = db.get_product(data['item'])
+        if result['status'] == 'success':
+            return jsonify({'status': 'success', 'data': result['data']}), 200
+        else:
+            return jsonify({'status': 'failed', 'message': result['message']}), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 200
+
 @bp_api.route('/api/get/result', methods=['POST'])
 def get_result():
     data_request = request.json
@@ -150,3 +179,32 @@ def get_result():
     except Exception as e:
         print(str(e))
         return jsonify({'error': str(e)}), 500
+
+@bp_api.route('/api/delete/session', methods=['POST'])
+def delete_session():
+    data_request = request.json
+    try:
+        session = data_request.get("session")    
+
+        if session in result_all:
+            del result_all[session]
+
+        return jsonify({'status': 'success', 'message': 'session delete'}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+@bp_api.route('/api/put/product', methods=['POST'])
+def put_product():
+    data = request.json
+    try:
+        result = db.put_product(data["value"], data['field'], data["p_id"])
+
+        if result['status'] == 'success':
+            return jsonify({'status': 'success', 'data': result['data']}), 200
+        else:
+            return jsonify({'status': 'error', 'message': result['message']}), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

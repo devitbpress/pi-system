@@ -17,22 +17,14 @@ def manual_calc_view():
 def analysis_view():
     return render_template('analisis.html')
 
-# ~~~~~~~~~~~~~~~~~
-@bp_view.route("/")
-def index():
-    return "<script>window.location.href = '/masuk';</script>"
-
-# halaman kalkulasi
-@bp_view.route("/kalkulasi")
-def analyst_view():
-    return render_template('kalkulasi.html')
-
-
-
 # halaman produk
 @bp_view.route("/produk")
 def product_view():
-    return render_template('product.html')
+    return render_template('produk.html')
+
+@bp_view.route("/")
+def index():
+    return "<script>window.location.href = '/masuk';</script>"
 
 # halaman masuk
 @bp_view.route("/masuk")

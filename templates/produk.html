@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PI | Kalkultaor</title>
+        <title>PI | Produk</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
@@ -32,14 +32,14 @@
                         <img src="{{ url_for('static', filename='assets/statistic-white.png') }}" alt="statistic" class="h-6 w-fit group-hover:hidden" />
                         <span class="text-white group-hover:text-blue-700">Analisis</span>
                     </a>
-                    <a href="./kalkulator" class="flex items-center gap-4 w-full h-14 py-3 px-4 bg-sky-50 cursor-pointer duration-150">
-                        <img src="{{ url_for('static', filename='assets/calc-blue.png') }}" alt="kalkulator" class="h-6 w-fit" />
-                        <span class="text-blue-700">Kalkulator</span>
+                    <a href="./kalkulator" class="flex items-center gap-4 w-full h-14 py-3 px-4 hover:bg-sky-50 cursor-pointer duration-150 group">
+                        <img src="{{ url_for('static', filename='assets/calc-blue.png') }}" alt="kalkulator" class="h-6 w-fit hidden group-hover:block" />
+                        <img src="{{ url_for('static', filename='assets/calc-white.png') }}" alt="kalkulator" class="h-6 w-fit group-hover:hidden" />
+                        <span class="text-white group-hover:text-blue-700">Kalkulator</span>
                     </a>
-                    <a href="./produk" class="flex items-center gap-4 w-full h-14 py-3 px-4 hover:bg-sky-50 cursor-pointer duration-150 group">
-                        <img src="{{ url_for('static', filename='assets/product-blue.png') }}" alt="databases" class="h-6 w-fit hidden group-hover:block" />
-                        <img src="{{ url_for('static', filename='assets/product-white.png') }}" alt="databases" class="h-6 w-fit group-hover:hidden" />
-                        <span class="text-white group-hover:text-blue-700">Produk</span>
+                    <a href="./produk" class="flex items-center gap-4 w-full h-14 py-3 px-4 bg-sky-50 cursor-pointer duration-150">
+                        <img src="{{ url_for('static', filename='assets/product-blue.png') }}" alt="databases" class="h-6 w-fit" />
+                        <span class="text-blue-700">Produk</span>
                     </a>
                 </div>
 
@@ -50,6 +50,10 @@
 
                         <div id="account-option" class="absolute hidden group-hover:flex flex-col w-[9.5rem] left-0 bottom-0">
                             <div class="flex flex-col shadow bg-white rounded-xl border w-full p-2">
+                                <!-- <a href="./" class="flex gap-4 p-2 hover:bg-sky-100 rounded-lg duration-150">
+                                    <img src="{{ url_for('static', filename='assets/setting-blue.png') }}" alt="setting" class="h-5 w-fit" />
+                                    <p class="whitespace-nowrap">Pengaturan</p>
+                                </a> -->
                                 <a href="./keluar" class="flex gap-4 p-2 hover:bg-sky-100 rounded-lg duration-150">
                                     <img src="{{ url_for('static', filename='assets/logout-blue.png') }}" alt="png" class="h-5 w-fit" />
                                     <p class="whitespace-nowrap">Keluar</p>
@@ -63,60 +67,20 @@
 
             <!-- tools -->
             <div class="w-56 h-full bg-white shadow border flex flex-col gap-4 py-4 duration-300">
-                <h1 class="text-xl font-semibold text-blue-900 px-2">Kalkulator</h1>
+                <h1 class="text-xl font-semibold text-blue-900 px-2">Produk</h1>
 
                 <div class="h-[calc(100%-3rem)] w-full overflow-y-scroll">
                     <div id="child-tools" class="flex flex-col text-xs text-gray-800">
-                        <label for="inp-file" class="w-[calc(100%-1rem)] py-2 mb-4 mx-2 rounded-lg bg-gradient-to-r from-orange-300 hover:from-orange-400 via-orange-400 hover:via-orange-500 to-orange-300 hover:to-orange-400 cursor-pointer text-center text-sm text-white duration-300">+ Unggah File</label>
-                        <input type="file" id="inp-file" hidden multiple accept=".xls, .xlsx" />
-
                         <div class="w-full flex flex-col">
                             <div class="w-full flex justify-between items-center bg-sky-100 py-2 px-3 cursor-pointer text-sm">
                                 <div class="flex gap-2">
                                     <img src="{{ url_for('static', filename='assets/dataset-blue.png') }}" alt="dataset" class="w-fit h-5" />
-                                    <h1 class="text-blue-900">Input File</h1>
+                                    <h1 class="text-blue-900">Produk PI</h1>
                                 </div>
                             </div>
 
-                            <div data-tools="unggah" class="tools unggah px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Hasil Unggah</span>
-                            </div>
-                            <div data-tools="hasil" class="tools hasil px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Hasil Model</span>
-                            </div>
-                        </div>
-
-                        <div class="w-full flex flex-col">
-                            <div class="w-full flex justify-between items-center bg-sky-100 py-2 px-3 cursor-pointer text-sm">
-                                <div class="flex gap-2">
-                                    <img src="{{ url_for('static', filename='assets/dataset-blue.png') }}" alt="dataset" class="w-fit h-5" />
-                                    <h1 class="text-blue-900">Input Manual</h1>
-                                </div>
-                            </div>
-
-                            <div data-tools="q" class="tools q px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Q</span>
-                            </div>
-                            <div data-tools="wilson" class="tools wilson px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Wilson</span>
-                            </div>
-                            <div data-tools="poisson" class="tools poisson px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Poisson</span>
-                            </div>
-                            <div data-tools="tchebycheff" class="tools tchebycheff px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Tchybeef</span>
-                            </div>
-                            <div data-tools="regret" class="tools regret px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Regret (Non-Moving)</span>
-                            </div>
-                            <div data-tools="linear" class="tools linear px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Linear (Non-Moving)</span>
-                            </div>
-                            <div data-tools="non-linear" class="tools non-linear px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model Non-Linear (Non-Moving)</span>
-                            </div>
-                            <div data-tools="bcr" class="tools bcr px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
-                                <span>Model BCR</span>
+                            <div data-tools="products" class="tools products px-1 py-2 hover:text-white cursor-pointer border-b hover:bg-sky-500 flex justify-between items-center">
+                                <span>List Produk</span>
                             </div>
                         </div>
                     </div>
@@ -148,6 +112,6 @@
         <script src="{{ url_for('static', filename='vendors/sheet.js') }}"></script>
         <script src="{{ url_for('static', filename='vendors/aggrid.js') }}"></script>
         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/kalkulator.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/produk.js') }}"></script>
     </body>
 </html>

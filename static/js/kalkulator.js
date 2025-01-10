@@ -168,7 +168,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Wilson") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 165 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Permintaan Barang (D) Unit/Tahun", field: "Permintaan Barang (D) Unit/Tahun", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -191,7 +191,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Q") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Rata - Rata Permintaan Barang (D) Unit/Tahun", field: "Rata - Rata Permintaan Barang (D) Unit/Tahun", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 150, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -217,7 +217,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Poisson") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 155 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Rata-Rata Permintaan Barang (D) Unit/Tahun", field: "Rata-Rata Permintaan Barang (D) Unit/Tahun", minWidth: 310, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 340, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -239,7 +239,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Tchebycheff") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 165, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Kerugian Ketidakadaan Barang (Cu) /Unit", field: "Kerugian Ketidakadaan Barang (Cu) /Unit", minWidth: 280, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -253,7 +253,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Regret (Non Moving)") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -267,7 +267,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Linear (Non Moving)") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -281,7 +281,7 @@ const aggridSheet = (agD) => {
     if (data.model === "Non Linear (Non Moving)") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 160 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 20, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -295,7 +295,7 @@ const aggridSheet = (agD) => {
     if (data.model === "BCR") {
         columnDefs[aggridId] = [
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
-            { headerName: "Material Description", field: "Material Description", minWidth: 185 },
+            { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
             { headerName: "Harga Komponen (Ho)", field: "Harga Komponen (Ho)", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
             { headerName: "Kerugian Komponen (Co)", field: "Kerugian Komponen (Co)", minWidth: 195, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -356,6 +356,7 @@ const toolsUnggah = (header, headerAction, childContent) => {
                 dataUnggah.splice(index, 1);
             }
 
+            delete dataHasil[params.data.id];
             gridApi.unggah.applyTransaction({ remove: [params.data] });
         });
         return span;
@@ -417,7 +418,7 @@ const toolsHasil = (header, headerAction, childContent, agD) => {
         const sheet = document.getElementById("sheet-aggrid");
         sheet.innerHTML = "";
         thisIdhasil = Object.keys(dataHasil)[0];
-        Object.values(dataHasil).forEach((item) => (sheet.innerHTML += `<div id="sheet-${thisIdhasil}" onclick="aggridSheet(${item.id})" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item.model} | ${item.name}</div>`));
+        Object.values(dataHasil).forEach((item) => (sheet.innerHTML += `<div id="sheet-${item.id}" onclick="aggridSheet(${item.id})" class="sheet-aggrid-tag w-fit px-4 py-2 whitespace-nowrap cursor-pointer hover:text-blue-700 hover:bg-gray-100 rounded-b duration-150">${item.model} | ${item.name}</div>`));
         aggridSheet(thisIdhasil);
     }
 };

@@ -323,8 +323,6 @@ def upload_file(data_request, id_file, session):
 
 # function delete file
 def delete_file(id_file, session):
-    print(data_result[session])
-
     if session in data_result and id_file in data_result[session]['file']:
         del data_result[session]['file'][id_file]
         return {'status': 'success', 'message': 'File deleted successfully'}
@@ -439,7 +437,6 @@ def processing_merge(session):
         print("proses merge dataframe")
         filtered_df = process_data(df_com_hist)
         filtered_df = filtered_df.rename(columns={'Material': 'Material_Code', 'Unnamed: 7': 'Quantity(EA)'})
-        print("selesai merge dataframe")
         result = filtered_df[['Posting Date', 'Material_Code', 'Material Description', 'Quantity(EA)', 'Movement Type']]
 
         return result
@@ -608,9 +605,7 @@ def processing_classification(data):
             "Deskripsi_Pengujian_Statistik": ["Test4", "Test5", "Test6"]
         }
         df_baru = pd.DataFrame(data_contoh)
-        print(len(Hasil_Klasifikasi))
         Hasil_Klasifikasi = pd.concat([Hasil_Klasifikasi, df_baru], ignore_index=True)
-        print(len(Hasil_Klasifikasi))
         # end contoh non mocing
         return Hasil_Klasifikasi
     except KeyError as e:
@@ -631,7 +626,7 @@ def deterministrik_model(deterministik_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal deterministik")
         return
 
     df1 = pd.DataFrame(deterministik_array)
@@ -703,7 +698,7 @@ def normal_model(normal_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal normal")
         return
 
     df1 = pd.DataFrame(normal_array)
@@ -785,7 +780,7 @@ def poisson_model(poisson_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal poisson")
         return
 
     df1 = pd.DataFrame(poisson_array)
@@ -863,7 +858,7 @@ def taktentu_model(taktentu_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal tak tentu")
         return
 
     df1 = pd.DataFrame(taktentu_array)
@@ -922,7 +917,7 @@ def non_moving_regret(nonmoving_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal regret")
         return
 
     df1 = pd.DataFrame(nonmoving_array)
@@ -979,7 +974,7 @@ def non_moving_linear(nonmoving_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal linear")
         return
 
     df1 = pd.DataFrame(nonmoving_array)
@@ -1036,7 +1031,7 @@ def non_moving_non_linear(nonmoving_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal non linear")
         return
 
     df1 = pd.DataFrame(nonmoving_array)
@@ -1093,7 +1088,7 @@ def bcr(bcr_array):
     product = db.get_product_model(material_code_list)
 
     if product[0] == "failed":
-        print("gagal")
+        print("gagal bcr")
         return
 
     df1 = pd.DataFrame(bcr_array)
@@ -1143,44 +1138,6 @@ def bcr(bcr_array):
 
     return result_bcr
 
-    # Membaca file Excel dan mendefinisikan kolom berdasarkan baris kedua (indeks 1)
-    df_verifikasi_Model_BCR = pd.read_excel(
-        "20Agustus_Hasil_Hitung_Kalkulator_Stock_Holding_update_Data.xlsx", 
-        sheet_name="BCR (belum)", 
-        header=1  # Memulai pembacaan header dari baris kedua
-    )
-
-    # Ganti titik sebagai pemisah ribuan dengan string kosong, lalu konversi menjadi float
-    df_verifikasi_Model_BCR['Stock Out Effect'] = 3_720_000_000
-    df_verifikasi_Model_BCR
-
-    # Inisiasi hasil model BCR
-    hasil_list_hasil_Model_BCR = []
-
-    # Iterasi melalui DataFrame input Pola No Moving
-    for index, row in df_verifikasi_Model_BCR.iterrows():
-        hasil_Model_BCR = Model_Inventori_BCR(
-        Harga_Komponen_Ho=row['Unit Price'],
-        Kerugian_Komponen_Co=row['Stock Out Effect'],
-        Suku_bunga_i= 0.1,
-        Waktu_sisa_operasi=row['Sisa Tahun Pemakaian'],
-        probabilitas= "uniform"
-        )
-        # Tambahkan hasil ke dalam list
-        hasil_list_hasil_Model_BCR.append(hasil_Model_BCR)
-
-    # Konversi hasil ke dalam DataFrame untuk tampilan yang lebih baik
-    df_hasil_Model_BCR_Uniform = pd.DataFrame(hasil_list_hasil_Model_BCR)
-
-    pd.options.display.float_format = '{:,.0f}'.format
-
-    # Export dataaset
-    filename15 = 'Data_Output_Non_Linear_ModelBCR_Uniform.xlsx'
-
-
-    # Mengekspor data gabungan dengan progres
-    export_data_with_progress(df_hasil_Model_BCR_Uniform, output_folder, filename15)
-
 # proses classification model
 def processing_model(dataframe):
     df = dataframe
@@ -1202,57 +1159,49 @@ def processing_model(dataframe):
     )
 
     deterministik_array = result["deterministik"]
-    print(f"data model deterministik awal: {len(deterministik_array)}")
+    print("metode deterministik start")
     result_deterministik = []
     if len(deterministik_array) != 0:
         result_deterministik = deterministrik_model(deterministik_array)
-        print(f"{'berhasil model deterministik: '} {len(result_deterministik)}")
 
     normal_array = result["normal"]
-    print(f"data model normal awal: {len(normal_array)}")
+    print("metode normal start")
     result_normal = []
     if len(normal_array) != 0:
         result_normal = normal_model(normal_array)
-        print(f"{'berhasil model normal: '} {len(result_normal)}")
 
     poisson_array = result["poisson"]
-    print(f"data model poisson awal: {len(poisson_array)}")
+    print("metode poisson start")
     result_poisson = []
     if len(poisson_array) != 0:
         result_poisson = poisson_model(poisson_array)
-        print(f"{'berhasil model poisson'} {len(result_poisson)}")
 
     taktentu_array = result["taktentu"]
-    print(f"data model taktentu awal: {len(taktentu_array)}")
+    print("metode tak tentu start")
     result_taktentu = []
     if len(taktentu_array) != 0:
         result_taktentu = taktentu_model(taktentu_array)
-        print(f"berhasil model tak tentu {len(result_taktentu)}")
 
     nonmoving_array = result["nonmoving"]
 
-    print(f"data model non moving awal: {len(nonmoving_array)}")
+    print("metode non moving start")
     result_nonmovingregret = []
     if len(nonmoving_array) != 0:
         result_nonmovingregret = non_moving_regret(nonmoving_array)
-        print(f"berhasil model regret {len(result_nonmovingregret)}")
 
     result_nonmovinglinear = []
     if len(nonmoving_array) != 0:
         result_nonmovinglinear = non_moving_linear(nonmoving_array)
-        print(f"berhasil model linear {len(result_nonmovinglinear)}")
 
     result_nonmovingnonlinear = []
     if len(nonmoving_array) != 0:
         result_nonmovingnonlinear = non_moving_non_linear(nonmoving_array)
-        print(f"berhasil model non linear {len(result_nonmovingnonlinear)}")
 
     bcr_array = result["bcr"]
-    print(f"data model bcr awal: {len(bcr_array)}")
+    print("metode bcr start")
     result_bcr = []
     if len(bcr_array) != 0:
         result_bcr = bcr(bcr_array)
-        print(f"berhasil model bcr {len(result_bcr)}")
 
     print("selesai semua model")
 

@@ -1,50 +1,7 @@
 const inpFile = document.getElementById("inp-file");
 const lblFile = document.getElementById("lbl-file");
 
-const dataTest = [
-    {
-        "Base Unit of Measure": "TON",
-        Material: 3000067,
-        "Material Description": "FERTILIZER:BRUCITE;50KG/BAG;75%MGO",
-        "Material.1": 3000067,
-        "Movement Type": 351,
-        "Posting Date": "Mon, 04 Jan 2016 00:00:00 GMT",
-        "Purchase Order": 5210000044,
-        Quantity: 18,
-        "Unnamed: 7": 84.67,
-    },
-    {
-        "Base Unit of Measure": "TON",
-        Material: 1000017,
-        "Material Description": "DAP:(NH4)2HPO4;GRANULAR;64%",
-        "Material.1": 1000017,
-        "Movement Type": "351",
-        "Posting Date": "Tue, 05 Jan 2016 00:00:00 GMT",
-        "Purchase Order": 5210000000,
-        Quantity: 90.62,
-        "Unnamed: 7": 32952.36000000004,
-    },
-    {
-        "Base Unit of Measure": "TON",
-        Material: 1000017,
-        "Material Description": "DAP:(NH4)2HPO4;GRANULAR;64%",
-        "Material.1": 1000017,
-        "Movement Type": "351",
-        "Posting Date": "Tue, 05 Jan 2016 00:00:00 GMT",
-        "Purchase Order": 5210000000,
-        Quantity: 84.35,
-        "Unnamed: 7": 32952.36000000004,
-    },
-];
-
-let session = sessionStorage.getItem("session");
-if (!session) {
-    let now = new Date();
-    sessionStorage.setItem("session", now.getTime());
-    session = sessionStorage.getItem("session");
-}
-
-let fileOnProcess = true;
+let fileStatusToProses = true;
 let dataListFile = {};
 
 let idFileMentah = 1;
@@ -56,34 +13,51 @@ let dataClass = {};
 let dataModel = {};
 
 const runAllFile = async () => {
-    fileOnProcess = false;
+    const btnProses = document.getElementById("btn-proses");
 
-    const indikatorProses = ["subset", "class", "int-q", "int-wilson", "int-poisson", "int-tchebycheff", "int-regret", "int-linear", "int-non-linear", "int-bcr"];
+    fileStatusToProses = false;
+    btnProses.disabled = true;
+    btnProses.classList.add("cursor-not-allowed");
+    lblFile.style.cursor = "not-allowed";
+    inpFile.disabled = true;
+    document.querySelector("#btn-proses h2").textContent = "Sedang Proses";
+
+    const indikatorProses = ["subset", "class", "q", "wilson", "poisson", "tchebycheff", "regret", "linear", "non-linear", "bcr"];
     indikatorProses.forEach((item) => indikatorNavigation(item, "P"));
 
-    const response = await await postFetch("/api/get/analysis/proses", { session: session });
+    const response = await postFetch("/api/get/analysis/proses", { session: session });
     if (response[0] !== "processing") {
         notification("show", "proses gagal", "failed");
         return;
     }
 
+    let idProgress = progresBar("Normalisasi data Input Histori Good Issue (GI)", "Proses Data", dataList.length * 5000);
+    setTimeout(() => {
+        sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
+        idProgress = progresBar("Filtering data Histori Good Issue (GI)", "Proses Data", dataList.length * 6000);
+        setTimeout(() => {
+            sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
+            idProgress = progresBar("Agregasi Data", "Proses Data", dataList.length * 60000);
+        }, dataList.length * 6000);
+    }, dataList.length * 5000);
+
     let merge;
     do {
         merge = await postFetch("/api/get/result", { session: session, field: "merge" });
         if (merge.status !== "success") {
-            console.log("Retrying in 1 second...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (merge.status !== "success");
     dataSubset = merge.data;
-    indikatorNavigation("subset", "P");
+    sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
+    idProgress = progresBar("Klasifikasi Materia dan Identifikasi Pola Distribusi", "Proses Data", merge.data.length / 1.5);
+    indikatorNavigation("subset", "D");
     tools("subset");
 
     let classification;
     do {
         classification = await postFetch("/api/get/result", { session: session, field: "classification" });
         if (classification.status !== "success") {
-            console.log("Retrying in 1 second...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (classification.status !== "success");
@@ -91,27 +65,35 @@ const runAllFile = async () => {
         !dataClass[item.Kategori] ? (dataClass[item.Kategori] = []) : "";
         dataClass[item.Kategori].push(item);
     });
-    indikatorNavigation("class", "P");
+    sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
+    idProgress = progresBar("Perhitungan Model Inventory", "Proses Data", 5000);
+    indikatorNavigation("class", "D");
     tools("class");
 
     let model;
     do {
         model = await postFetch("/api/get/result", { session: session, field: "model" });
         if (model.status !== "success") {
-            console.log("Retrying in 1 second...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     } while (model.status !== "success");
     dataModel = model.data;
     indikatorProses.forEach((item) => indikatorNavigation(item, "D"));
     tools("q");
+    sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
+
+    fileStatusToProses = true;
+    btnProses.disabled = false;
+    btnProses.classList.remove("cursor-not-allowed");
+    lblFile.style.cursor = "pointer";
+    inpFile.disabled = false;
 };
 
 const uploadFile = async (index) => {
-    if (!fileOnProcess) {
+    if (!fileStatusToProses) {
         return;
     } else {
-        fileOnProcess = false;
+        fileStatusToProses = false;
         lblFile.style.cursor = "not-allowed";
         inpFile.disabled = true;
     }
@@ -127,7 +109,7 @@ const uploadFile = async (index) => {
             indikatorNavigation("list", "D");
             notification("show", message, "failed");
             sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
-            fileOnProcess = true;
+            fileStatusToProses = true;
             lblFile.style.cursor = "pointer";
             inpFile.disabled = false;
             idFileMentah = idFileMentah + 1;
@@ -152,7 +134,7 @@ const uploadFile = async (index) => {
         dataList.push({ name: file.name, size: `${file.size / 1000}`, action: `<div class="flex gap-1 items-center cursor-pointer"><img src="./static/assets/delete-red.png" alt="delete" class="w-4 h-4" /><span class="text-red-500">Hapus</span></div>`, status: statusAggrid, id: idFileMentah });
 
         if (inpFile.files.length !== index + 1) {
-            fileOnProcess = true;
+            fileStatusToProses = true;
             lblFile.style.cursor = "pointer";
             inpFile.disabled = false;
             sInterval[idProgress] === "done" ? progresBarStatus(idProgress) : (sInterval[idProgress] = "done");
@@ -161,7 +143,7 @@ const uploadFile = async (index) => {
             return;
         }
 
-        fileOnProcess = true;
+        fileStatusToProses = true;
         lblFile.style.cursor = "pointer";
         inpFile.disabled = false;
         idFileMentah = idFileMentah + 1;
@@ -207,6 +189,7 @@ const aggridSheet = (agD) => {
 };
 
 const aggridSheetClass = (agD) => {
+    document.getElementById("class-subtitle").textContent = agD;
     const data = dataClass[agD];
     const dataPola = { "Pola Tak - Tentu": "tchebycheff", "Pola Deterministik": "wilson", "Pola Poisson": "poisson", "Pola Normal": "q", "Pola Non Moving": "nonmoving" };
     const aggridId = `class-${dataPola[agD]}`;
@@ -262,14 +245,14 @@ const toolsList = (header, headerAction, childContent) => {
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
         <div class="font-medium text-lg text-blue-900 flex justify-between items-center">
             <h1>File Terunggah</h1>
-            <button id="btn-proses" btn-id="new" class="relative px-6 py-2 overflow-hidden font-medium text-sky-700 bg-sky-50 border border-gray-100 rounded-lg group focus:scale-95 duration-150 shadow">
+            <button id="btn-proses" btn-id="new" ${!fileStatusToProses ? "disabled" : ""} class="${!fileStatusToProses ? "cursor-not-allowed" : ""} relative px-6 py-2 overflow-hidden font-medium text-sky-700 bg-sky-50 border border-gray-100 rounded-lg group focus:scale-95 duration-150 shadow">
                 <span class="absolute top-0 left-0 w-0 h-0 transition-all duration-200 border-t-2 border-sky-700 group-hover:w-full ease"></span>
                 <span class="absolute bottom-0 right-0 w-0 h-0 transition-all duration-200 border-b-2 border-sky-700 group-hover:w-full ease"></span>
                 <span class="absolute top-0 left-0 w-full h-0 transition-all duration-300 delay-200 bg-sky-700 group-hover:h-full ease"></span>
                 <span class="absolute bottom-0 left-0 w-full h-0 transition-all duration-300 delay-200 bg-sky-700 group-hover:h-full ease"></span>
                 <span class="absolute inset-0 w-full h-full duration-300 delay-300 bg-sky-700 opacity-0 group-hover:opacity-100"></span>
                 <div class="relative font-semibold transition-colors duration-300 delay-200 group-hover:text-white ease text-sm flex gap-1">
-                <h2>Proses Semua File</h2>
+                <h2>${fileStatusToProses ? "Proses Semua File" : "Sedang Proses"}</h2>
                     <img src="/static/assets/proses-blue.png" alt="proses" class="w-5 h-5 duration-300 delay-200 group-hover:w-0 group-hover:h-0" />
                     <img src="/static/assets/proses-white.png" alt="proses" class="w-0 h-0 duration-300 delay-200 group-hover:w-5 group-hover:h-5" />
                 </div>
@@ -285,6 +268,11 @@ const toolsList = (header, headerAction, childContent) => {
         const span = document.createElement("span");
         span.innerHTML = params.value;
         span.addEventListener("click", async () => {
+            if (!fileStatusToProses) {
+                notification("show", "data sedang di proses", "failed");
+                return;
+            }
+
             const rowIndex = params.node.rowIndex;
             const index = dataList.findIndex((item) => item.name === params.data.name);
             if (index !== -1) {
@@ -295,7 +283,7 @@ const toolsList = (header, headerAction, childContent) => {
 
             if (response.status === "success") {
                 notification("show", "File berhasil terhapus", "success");
-                delete dataMentah[params.data.name];
+                delete dataMentah[params.data.id];
                 gridApi[aggridId].applyTransaction({ remove: [params.data] });
             } else {
                 notification("show", response.message, "failed");
@@ -430,7 +418,7 @@ const toolsClass = (header, headerAction, childContent) => {
 
     childContent.innerHTML = `<div class="w-full h-full bg-white rounded-xl shadow p-3 flex flex-col gap-3">
         <div class="w-full flex justify-between">
-            <div class="flex gap-2 items-center text-sm"></div>
+            <div id="class-subtitle" class="flex gap-2 items-center text-sm"></div>
             <div class="flex gap-2 justify-between items-center text-xs">
                 <span>Cari Data</span>
                 <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
@@ -490,8 +478,8 @@ const toolsQ = (header, headerAction, childContent) => {
             <div>Data Hasil Model Q</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -548,8 +536,8 @@ const toolsWilson = (header, headerAction, childContent) => {
             <div>Data Hasil Model Wilson</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -603,8 +591,8 @@ const toolsPoisson = (header, headerAction, childContent) => {
             <div>Data Hasil Model Poisson</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -657,8 +645,8 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
             <div>Data Hasil Model Tchebycheff</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -703,8 +691,8 @@ const toolsRegret = (header, headerAction, childContent) => {
             <div>Data Hasil Model Regret</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -749,8 +737,8 @@ const toolsLinear = (header, headerAction, childContent) => {
             <div>Data Hasil Model Linear</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -795,8 +783,8 @@ const toolsNonLinear = (header, headerAction, childContent) => {
             <div>Data Hasil Model Non Linear</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
@@ -806,9 +794,9 @@ const toolsNonLinear = (header, headerAction, childContent) => {
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
-        { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 20, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
         { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-        { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+        { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
         { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
         { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
         { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
@@ -841,8 +829,8 @@ const toolsBcr = (header, headerAction, childContent) => {
             <div>Data Hasil Model BCR</div>
             <div class="flex gap-2 justify-between items-center  text-xs">
                 <span>Cari Data</span>
-                <input oninput="inpSearch(event)" data="" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
-                <button onclick="downloadCsv(event)" data="" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
+                <input oninput="inpSearch(event)" data="${aggridId}" id="inpSearch" type="text" placeholder="cari..." class="outline-none border py-1 px-2 rounded border-green-500" />
+                <button onclick="downloadCsv(event)" data="${aggridId}" id="btnCsv" class="ml-4 bg-transparent hover:bg-green-500 text-green-700 hover:text-white py-1 px-2 border border-green-500 hover:border-transparent rounded">Export CSV</button>
             </div>
         </div>
         <div id="aggrid-${aggridId}" class="ag-theme-quartz w-full h-full"></div>
