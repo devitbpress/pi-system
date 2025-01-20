@@ -215,6 +215,7 @@ const aggridSheetClass = (agD) => {
     };
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material_Code", field: "Material_Code", minWidth: 140 },
         { headerName: "Material Description", field: "Material Description", minWidth: 200 },
         { headerName: "Jumlah_Data", field: "Jumlah_Data", minWidth: 130, cellClass: "justify-center" },
@@ -310,6 +311,7 @@ const toolsList = (header, headerAction, childContent) => {
 
     columnDefs[aggridId] = [
         { headerName: "id", field: "id", hide: true },
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "NAMA", field: "name" },
         { headerName: "UKURAN /KB", field: "size", minWidth: 150, maxWidth: 200, valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
         { headerName: "AKSI", field: "action", cellRenderer: (params) => aggridCellRenderer(params), minWidth: 150, maxWidth: 200 },
@@ -397,6 +399,7 @@ const toolsSubset = (header, headerAction, childContent) => {
     };
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Posting Date", field: "Posting Date", minWidth: 150, maxWidth: 150, valueGetter: (params) => aggridValueGetter(params), valueFormatter: (params) => aggridValueFormatter(params) },
         { headerName: "Material Code", field: "Material_Code", minWidth: 150, maxWidth: 150 },
         { headerName: "Material Description", field: "Material Description", minWidth: 150 },
@@ -486,6 +489,7 @@ const toolsQ = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -544,6 +548,7 @@ const toolsWilson = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 165 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -599,6 +604,7 @@ const toolsPoisson = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 155 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -653,6 +659,7 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -699,6 +706,7 @@ const toolsRegret = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -745,6 +753,7 @@ const toolsLinear = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -791,6 +800,7 @@ const toolsNonLinear = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 160 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -837,6 +847,7 @@ const toolsBcr = (header, headerAction, childContent) => {
     </div>`;
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "Material Code", field: "Material Code", minWidth: 120 },
         { headerName: "Material Description", field: "Material Description", minWidth: 185 },
         { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },

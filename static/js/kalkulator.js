@@ -167,6 +167,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Wilson") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -190,6 +191,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Q") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -216,6 +218,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Poisson") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -238,6 +241,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Tchebycheff") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -252,6 +256,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Regret (Non Moving)") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -266,6 +271,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Linear (Non Moving)") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -280,6 +286,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "Non Linear (Non Moving)") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -294,6 +301,7 @@ const aggridSheet = (agD) => {
 
     if (data.model === "BCR") {
         columnDefs[aggridId] = [
+            { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
             { headerName: "Material Code", field: "Material Code", minWidth: 120 },
             { headerName: "Material Description", field: "Material Description", minWidth: 200 },
             { headerName: "ABC Indicator", field: "ABC Indicator", minWidth: 120 },
@@ -384,6 +392,7 @@ const toolsUnggah = (header, headerAction, childContent) => {
     };
 
     columnDefs[aggridId] = [
+        { headerName: "No", valueGetter: "node.rowIndex + 1", minWidth: 60, maxWidth: 60, pinned: "left", cellClass: "justify-end" },
         { headerName: "NAMA", field: "name", minWidth: 150 },
         { headerName: "Model", field: "model", editable: true, cellEditor: "agSelectCellEditor", cellEditorParams: { values: ["Q", "Wilson", "Poisson", "Tchebycheff", "Regret (Non Moving)", "Linear (Non Moving)", "Non Linear (Non Moving)", "BCR"] }, onCellValueChanged: (event) => aggridValueChanged(event), minWidth: 150 },
         { headerName: "AKSI", field: "action", cellRenderer: (params) => aggridCellRenderer(params), minWidth: 100, maxWidth: 100 },
