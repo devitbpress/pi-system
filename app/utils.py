@@ -457,10 +457,10 @@ def count_and_stats_by_material(df):
         Standar_Deviasi=('Quantity(EA)', 'std'),
         Has_Z61=('Has_Z61', 'any')
     ).reset_index()
-    
+
     # Mengisi nilai None untuk grup dengan Jumlah Data 0 atau 1
     grouped.loc[grouped['Jumlah_Data'] <= 1, ['Rata_Rata', 'Variansi', 'Standar_Deviasi']] = None
-    
+
     # Menambahkan kolom 'Proses1' dan mengisi sesuai kondisi
     grouped['Kategori'] = None
     grouped['Proses1'] = None
@@ -472,7 +472,7 @@ def count_and_stats_by_material(df):
     grouped.loc[grouped['Jumlah_Data'] == 0, 'Proses1'] = 'PT'
     grouped.loc[grouped['Jumlah_Data'] >= 30, 'Proses1'] = 'PN'
     grouped.loc[(grouped['Jumlah_Data'] > 0) & (grouped['Jumlah_Data'] < 30), 'Proses1'] = 'PP'
-    
+
     # Mengisi nilai None untuk kolom 'Proses2' berdasarkan kondisi awal
     mask = (grouped['Standar_Deviasi'] == 0) & (grouped['Variansi'] == 0) & (grouped['Proses1'].isin(['PN', 'PP']))
     grouped.loc[mask, 'Proses2'] = 'MD'
