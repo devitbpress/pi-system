@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 from scipy.stats import norm, poisson
+from itertools import accumulate, count
 
 # Model Inventori Probabilistik Normal– Model Q
 def Model_Q(
@@ -216,7 +217,6 @@ def Model_Poisson(
 
     Standar_Deviasi_Waktu_Ancang_Ancang_SL = Standar_Deviasi_Barang_ModelPoisson_S * math.sqrt(Lead_Time_ModelPoisson_L)
     qo_1_Awal_Poisson = math.sqrt((2 * Ongkos_Pesan_ModelPoisson_A * Rata_Rata_Pemesanan_Barang_ModelPoisson_D) / Ongkos_Simpan_ModelPoisson_h)
-
     # Hitung nilai alpha
     alpha_Awal_poisson = (Ongkos_Simpan_ModelPoisson_h * qo_1_Awal_Poisson) / (Ongkos_Kekurangan_Barang_ModelPoisson_Cu * Rata_Rata_Pemesanan_Barang_ModelPoisson_D)
 
@@ -719,3 +719,138 @@ def Model_Inventori_BCR(
         }
 
     return hasil_model_bcr
+
+def model_poisson(code, description, indicator, p, A, h, Cu, D, S, L):
+    SL = S*math.sqrt(L)
+    #=> hitung lot pemesanan
+    qo = math.sqrt(2*(A*D)/h)
+    #=> hitung alpha
+    a = (h*qo)/(Cu*D)
+    r = 0
+
+    #=> mulai iterasi
+    for j in count():
+        rx = 0
+        lambd = D*L
+
+        #=> mulai loop
+        while True:
+            Px = poisson.cdf(rx, lambd)
+            #=> akhir loop 1-px <= alpha
+            if 1 - Px <= a: break
+            rx += 1
+
+        #=> akhir iterasi saat reorder iterasi sebelumnya == reorder iterasi saat ini
+        if r == rx:break
+
+        #=> update reorder, lot dan alpha
+        r = rx
+        qo = math.sqrt(2*D*((A + Cu*(a*qo))/h))
+        a = (h*qo)/(Cu*D)
+
+        #=> hentikan iterasi jika lebih dari 10x iterasi
+        if j > 10: break
+        j += 1
+
+    #=> hitung safety stock, ongkos inventory dan tingkat pelayanan
+    ss = r - D*L
+    OT = D*p + A*D/qo + h*(0.5*qo + r - D*L) + Cu*a*D
+    n = (1 - a)*100
+    iterasi = j + 1
+
+    # hisil akhir
+    results = {
+        # base
+        'Material Code': code or '',
+        'Material Description': description or '',
+        'ABC Indicator': indicator or '',
+        # input
+        'Harga Barang Rp/Unit (p)': p,
+        'Ongkos Pesan Rp/Pesan (A)': A,
+        'Ongkos Simpan Rp/Unit/Tahun (h)': h,
+        'Ongkos Kekurangan Rp/Unit (Cu)': Cu,
+        'Rata-Rata Permintaan Unit/Tahun (D)': D,
+        'Standar Deviasi Permintaan Unit/Tahun (S)': S,
+        'Lead Time /tahun (L)': L,
+        # proses
+        'Iterasi': iterasi,
+        'Nilai Alpha (a)': a,
+        'Standar Deviasi Waktu Ancang-ancang Unit/Tahun (SL)': SL,
+        # output
+        'Economic Order Quantity (EOQ)': qo,
+        'Reorder Point /Unit (ROP)': r,
+        'Safety Stock /Unit (SS)': ss,
+        'Ongkos Inventori /Tahun (OT)': OT,
+        'Tingkat pelayanan % (n)': n
+    }
+
+    return results
+
+def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
+    #() function probabilitas kerusakan
+    def probabilitas_type(t, t_values):
+        if P == "uniform":
+            P_t_value = 1/len(t_values)
+        elif P == "linear":
+            total_sigma_t = sum(t_values)
+            P_t_value = round(t/total_sigma_t, 3)
+        elif P == "hiperbolik":
+            sqrt_t = np.sqrt(t_values)
+            total_sigma_sqrt_t = np.sum(sqrt_t)
+            P_t_value = (sqrt_t/total_sigma_sqrt_t)[t - 1]
+        elif P == "kuadratis":
+            t_squared = np.array(t_values)**2
+            total_t_squared = np.sum(t_squared)
+            P_t_value = (t_squared/total_t_squared)[t - 1]
+        elif P == "kubik":
+            t_cubed = np.array(t_values)**3
+            total_t_cubed = np.sum(t_cubed)
+            P_t_value = (t_cubed/total_t_cubed)[t-1]
+        else:
+            raise ValueError(f"Jenis '{P}' tidak valid.")
+
+        return P_t_value
+
+    t_values = list(range(1, N + 1))
+
+    #=> mulai loop
+    for t in t_values:
+        #=> hitung
+        Ht = Ho*(t + i)**t
+        Ct = Co*(t + i)**t
+        #=> pilih probabilitas kerusakan
+        P_t = probabilitas_type(t, t_values)
+        #=> hitung ekspektasi benefit
+        Bt = P_t*Ct
+        #=> hitung nilai benefit
+        BCRt = Bt/Ht
+
+        #=> conditional statement benefit > 1 / benefit == waktu kerusakan
+        if BCRt > 1 or t == len(t_values):
+            results = {
+                # proses
+                'Ongkos Pemakaian /Unit (Ht)': Ht,
+                'Kerugian Komponen /Unit (Ct)': Ct,
+                'Probabilitas Kerusakan P(t)': P_t,
+                'Ekspektasi Benefit (Bt)': Bt,
+                'Benefit Cost Ration': BCRt,
+                # output
+                'Remark': 'tidak ada rekomendasi' if t == len(t_values) else t #=> beli sparepart
+            }
+            break
+
+    #=> hasil akhir
+    results.update({
+        # base
+        'Material Code': code or '',
+        'Material Description': description or '',
+        'ABC Indicator': indicator or '',
+        # input
+        'Harga Komponen /Unit (Ho)': Ho,
+        'Kerugian Komponen /Unit (Co)': Co,
+        'Suku Bunga /Tahun (i)': i,
+        'Sisa Operasi /Tahun (N)' :N,
+        'Pola Probabilitas (P)': P,
+    })
+
+    return results

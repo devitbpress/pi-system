@@ -177,7 +177,6 @@ def get_result():
             return jsonify({'status': 'processing', 'message': 'Result not available yet for this session.'}), 200
 
     except Exception as e:
-        print(str(e))
         return jsonify({'error': str(e)}), 500
 
 @bp_api.route('/api/delete/session', methods=['POST'])
@@ -192,7 +191,6 @@ def delete_session():
         return jsonify({'status': 'success', 'message': 'session delete'}), 200
 
     except Exception as e:
-        print(str(e))
         return jsonify({'error': str(e)}), 500
 
 @bp_api.route('/api/put/product', methods=['POST'])

@@ -8,8 +8,8 @@ import pymysql
 db_host = 'localhost'
 db_user = 'alisatia'
 db_password = '@[db_aliSatia#9]'
-# db_user = 'root'
-# db_password = ''
+db_user = 'root'
+db_password = ''
 db_database = 'flask_pi'
 db_cursorclass = pymysql.cursors.DictCursor
 
@@ -40,7 +40,7 @@ def get_product_model(ag_code):
 
     try:
         with conn.cursor() as cursor:
-            sql = f"SELECT * FROM pi_product WHERE p_code IN ({material_codes_str})"
+            sql = f"SELECT p_code AS material_code, p_abc AS indicator, p_price AS price, p_lead_m AS lead_time FROM pi_product WHERE p_code IN ({material_codes_str}) GROUP BY p_code"
             cursor.execute(sql)
             products = cursor.fetchall()
 
