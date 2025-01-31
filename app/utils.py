@@ -18,6 +18,13 @@ def convert(value):
     else:
         return value
 
+# function untuk delete file per session
+def delete_sesion(session):
+    print('file', len(data_result))
+    if session in data_result:
+        del data_result[session]
+    print('file', len(data_result))
+
 # function untuk menghitung manual
 def manual_calculation(data_request):
     model = data_request.get("model")
@@ -126,7 +133,7 @@ def manual_calculation(data_request):
             items.get("abc_indikator") or None,
             convert(items["harga_komponen"]),
             convert(items["kerugian_komponen"]),
-            convert(items["suku_bunga"])/100,
+            convert(items["suku_bunga"]),
             convert(items["waktu_sisa_operasi"]),
             items.get("probabilitas"),
         )
@@ -294,7 +301,7 @@ def array_calculation(data_request, model):
                 item.get("ABC Indicator") or None,
                 convert(item["Harga Komponen (Ho)"]),
                 convert(item["Kerugian Komponen (Co)"]),
-                convert(item["Suku Bunga (I)"])/100,
+                convert(item["Suku Bunga (I)"]),
                 convert(item["Waktu Sisa Operasi (tahun)"]),
                 item.get("Pola Probabilitas") or 'uniform'
             )
@@ -1076,7 +1083,7 @@ def bcr_model(bcr_array):
     # identifikasi input
     df['harga_komponen'] = pd.to_numeric(df['price'], errors='coerce')
     df.loc[:, 'kerugian_komponen'] = 3720000000
-    df.loc[:, 'suku_bunga'] = 0.1
+    df.loc[:, 'suku_bunga'] = 10
     df.loc[:, 'sisa_operasi'] = 5
     probabilitas_options = ['uniform', 'linear', 'hiperbolik', 'kuadratis', 'kubik']
     df['probabilitas'] = [random.choice(probabilitas_options) for _ in range(len(df))]
@@ -1121,6 +1128,7 @@ def bcr_model(bcr_array):
 # proses classification model
 def processing_model(dataframe):
     df = dataframe
+    # df = pd.read_excel("./app/Hasil_Klasifikasi.xlsx", engine="openpyxl")
 
     kategori_list = [ "Pola Deterministik", "Pola Normal", "Pola Poisson", "Pola Tak - Tentu", "Pola Non Moving" ]
 

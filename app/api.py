@@ -185,8 +185,13 @@ def delete_session():
     try:
         session = data_request.get("session")    
 
+        print(len(result_all))
+
         if session in result_all:
             del result_all[session]
+
+        print(len(result_all))
+        utils.delete_sesion(session)
 
         return jsonify({'status': 'success', 'message': 'session delete'}), 200
 

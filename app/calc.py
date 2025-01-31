@@ -813,11 +813,14 @@ def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
 
     t_values = list(range(1, N + 1))
 
+    Ht = Ho
+    Ct = Co
+
     #=> mulai loop
     for t in t_values:
         #=> hitung
-        Ht = Ho*(t + i)**t
-        Ct = Co*(t + i)**t
+        Ht =  (1 + i/100)*Ht
+        Ct =  (1 + i/100)*Ct
         #=> pilih probabilitas kerusakan
         P_t = probabilitas_type(t, t_values)
         #=> hitung ekspektasi benefit
@@ -854,3 +857,34 @@ def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
     })
 
     return results
+
+
+# contoh dalam laporan akhir
+def contoh_poisson():
+    material_code = "code"
+    material_description = "description" 
+    abc_indicator = "abc"
+    harga_barang = 25000
+    ongkos_pesan = 2500
+    ongkos_simpan = harga_barang * 0.2
+    ongkos_kekurangan = 100000
+    rata_rata_permintaan = 4
+    standar_deviasi_permintaan = 2
+    lead_time = 0.25
+
+    result = model_poisson(material_code, material_description, abc_indicator, harga_barang, ongkos_pesan, ongkos_simpan, ongkos_kekurangan, rata_rata_permintaan, standar_deviasi_permintaan, lead_time)
+
+def contoh_bcr():
+    material_code = "code"
+    material_description = "description" 
+    abc_indicator = "abc"
+    harga_komponen = 100
+    kerugian_komponen = 1000
+    suku_bunga = 10
+    sisa_operasi = 10
+    pola_probabilitas = "kubik"
+
+    result = model_benefit_cost_ratio(material_code, material_description, abc_indicator, harga_komponen, kerugian_komponen, suku_bunga, sisa_operasi, pola_probabilitas)
+
+# contoh_poisson()
+# contoh_bcr()
