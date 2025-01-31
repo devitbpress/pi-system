@@ -2,7 +2,7 @@ import pandas as pd
 import threading
 
 from flask import Blueprint, request, jsonify
-from app import utils, db
+from app import utils, db, calc
 
 bp_api = Blueprint('api', __name__)
 
@@ -209,3 +209,132 @@ def put_product():
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/q', methods=['GET'])
+def contoh_q():
+    Rata_Rata_Permintaan_Barang_ModelQ_D = 100000
+    Lead_Time_ModelQ_L = 0.25
+    Standar_Deviasi_Permintaan_Barang_ModelQ_S = 10000
+    Ongkos_Pesan_ModelQ_A = 2500000
+    Harga_barang_ModelQ_p = 25000
+    Ongkos_Simpan_ModelQ_h = 5000
+    Ongkos_kekurangan_inventori_setiap_unit_barang_ModelQ_Cu = 100000
+    MaterialCode = 'code'
+    Material_Description = 'description'
+    ABC_Indikator = 'indikator'
+
+    try:
+        result = calc.Model_Q(
+            Rata_Rata_Permintaan_Barang_ModelQ_D,
+            Lead_Time_ModelQ_L, 
+            Standar_Deviasi_Permintaan_Barang_ModelQ_S, 
+            Ongkos_Pesan_ModelQ_A,
+            Harga_barang_ModelQ_p,
+            Ongkos_Simpan_ModelQ_h, 
+            Ongkos_kekurangan_inventori_setiap_unit_barang_ModelQ_Cu,
+            MaterialCode, 
+            Material_Description, 
+            ABC_Indikator
+        )
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/wilson', methods=['GET'])
+def contoh_wilson():
+    Permintaan_Barang_ModelWilson_D = 10000
+    Harga_barang_ModelWilson_p = 8000
+    Ongkos_Pesan_ModelWilson_A = 1000000
+    Lead_Time_ModelWilson_L = 0.25
+    Ongkos_Simpan_ModelWilson_h = 2000 
+    MaterialCode = 'code'
+    Material_Description = 'description'
+    ABC_Indikator = 'indikator'
+
+    try:
+        result = calc.Model_Wilson(Permintaan_Barang_ModelWilson_D,Harga_barang_ModelWilson_p,Ongkos_Pesan_ModelWilson_A,Lead_Time_ModelWilson_L,Ongkos_Simpan_ModelWilson_h,MaterialCode,Material_Description,ABC_Indikator)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/poisson', methods=['GET'])
+def contoh_poisson():
+    material_code = "code"
+    material_description = "description" 
+    abc_indicator = "abc"
+    harga_barang = 25000
+    ongkos_pesan = 2500
+    ongkos_simpan = harga_barang * 0.2
+    ongkos_kekurangan = 100000
+    rata_rata_permintaan = 4
+    standar_deviasi_permintaan = 2
+    lead_time = 0.25
+
+    try:
+        result = calc.model_poisson(material_code, material_description, abc_indicator, harga_barang, ongkos_pesan, ongkos_simpan, ongkos_kekurangan, rata_rata_permintaan, standar_deviasi_permintaan, lead_time)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/tchebycheff', methods=['GET'])
+def contoh_tchebycheff():
+    Harga_Barang_model_Tchebycheff_p = 1000000
+    Kerugian_Ketidakadaan_barang_model_Tchebycheff_Cu = 5000000
+    Standar_Deviasi_model_Tchebycheff_s = 1.45
+    Rata_Rata_Permintaan_barang_model_Tchebycheff_alpha = 3/10
+    MaterialCode = "code"
+    Material_Description = "description"
+    ABC_Indikator = "indicator"
+
+    try:
+        result = calc.Model_Tchebycheff_TakTentu(Harga_Barang_model_Tchebycheff_p, Kerugian_Ketidakadaan_barang_model_Tchebycheff_Cu, Standar_Deviasi_model_Tchebycheff_s, Rata_Rata_Permintaan_barang_model_Tchebycheff_alpha, MaterialCode, Material_Description, ABC_Indikator)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/nonmoving', methods=['GET'])
+def contoh_nonmoving():
+    Ongkos_pemakaian_komponen_H = 5000000
+    Ongkos_Kerugian_akibat_kerusakan_L = 10000000
+    Jumlah_komponen_terpasang_m = 5
+    MaterialCode = "code"
+    Material_Description = "description"
+    ABC_Indikator = "indicator"
+
+    try:
+        result_regret = calc.Model_MinMaxRegret(Ongkos_pemakaian_komponen_H, Ongkos_Kerugian_akibat_kerusakan_L, Jumlah_komponen_terpasang_m, MaterialCode, Material_Description, ABC_Indikator)
+        result_linear = calc.model_kerusakan_linear(Ongkos_pemakaian_komponen_H, Ongkos_Kerugian_akibat_kerusakan_L, Jumlah_komponen_terpasang_m, MaterialCode, Material_Description, ABC_Indikator)
+        result_nonlinear = calc.model_kerusakan_non_linear(Ongkos_pemakaian_komponen_H, Ongkos_Kerugian_akibat_kerusakan_L, Jumlah_komponen_terpasang_m, MaterialCode, Material_Description, ABC_Indikator)
+
+        return jsonify({'regret': result_regret, 'linear': result_linear, 'nonlinear': result_nonlinear}), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp_api.route('/api/contoh/bcr', methods=['GET'])
+def contoh_bcr():
+    material_code = "code"
+    material_description = "description" 
+    abc_indicator = "abc"
+    harga_komponen = 100
+    kerugian_komponen = 1000
+    suku_bunga = 10
+    sisa_operasi = 10
+    pola_probabilitas = "kubik"
+
+    try:
+        result = calc.model_benefit_cost_ratio(material_code, material_description, abc_indicator, harga_komponen, kerugian_komponen, suku_bunga, sisa_operasi, pola_probabilitas)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
