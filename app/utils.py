@@ -20,10 +20,8 @@ def convert(value):
 
 # function untuk delete file per session
 def delete_sesion(session):
-    print('file', len(data_result))
     if session in data_result:
         del data_result[session]
-    print('file', len(data_result))
 
 # function untuk menghitung manual
 def manual_calculation(data_request):

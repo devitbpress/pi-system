@@ -3,7 +3,6 @@ let sId = ``;
 !sessionId ? (window.location = "/masuk") : (sId = sessionId);
 
 let now = new Date();
-console.log(now.getTime());
 sessionStorage.setItem("session", now.getTime());
 const session = sessionStorage.getItem("session");
 
