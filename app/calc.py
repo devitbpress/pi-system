@@ -47,7 +47,7 @@ def Model_Q(
     # Hitung Standar Normal Loss L(z)
     Fungsi_Standar_Loss_Distribusi_Normal_ModelQ_phi_Za = Fungsi_Distribusi_Normal_ModelQ_F_Za - za_one_tailed_ModelQ_Inisiasi * (1- Fungsi_Kumulatif_Distribusi_Normal_ModelQ_phi_Za)
     Jumlah_Kekurangan_Barang_N = Standar_Deviasi_Permintaan_Barang_Waktu_LeadTime_ModelQ_SL * (Fungsi_Distribusi_Normal_ModelQ_F_Za - (za_one_tailed_ModelQ_Inisiasi * Fungsi_Standar_Loss_Distribusi_Normal_ModelQ_phi_Za))
-
+    print(Jumlah_Kekurangan_Barang_N)
     # Hitung Nilai Lot Pengadaan barang (qo2*)
     iterasi_ModelQ_i = 0
     Jumlah_Kekurangan_Barang_NT = Jumlah_Kekurangan_Barang_N
@@ -720,46 +720,142 @@ def Model_Inventori_BCR(
 
     return hasil_model_bcr
 
-def model_poisson(code, description, indicator, p, A, h, Cu, D, S, L):
-    SL = S*math.sqrt(L)
-    #=> hitung lot pemesanan
-    qo = math.sqrt(2*(A*D)/h)
-    #=> hitung alpha
-    a = (h*qo)/(Cu*D)
+def model_wilson(code, description, indicator, p, A, h, D, L):
+    qo = math.sqrt((2*A*D)/h)
+    r = D*L
+    T = math.sqrt((2*A)/(D*h)) * 365
+    OT = D*p + math.sqrt(2*A*D*h)
+
+    f = D/qo
+    Ob = D*p
+    Op = f*A
+    Os = 0.5*h*qo
+
+    return {
+        #base
+        "Material Code": code,
+        "Material Description": description,
+        "ABC Indicator": indicator,
+        #input
+        'Harga Barang Rp/Unit (p)': p,
+        'Ongkos Pesan Rp/Unit (A)': A,
+        'Ongkos Simpan Barang Rp/Unit/Tahun (h)': h,
+        'Rata-Rata Permintaan Barang Unit/Tahun (D)': D,
+        'Lead Time /Tahun (L)': L,
+        #proses
+        'Frequensi Pemesanan (f)': f,
+        "Ongkos Pembelian /Tahun (Ob)": Ob,
+        "Ongkos Pemesanan /Tahun (Op)": Op,
+        "Ongkos Penyimpanan /Tahun (Os)": Os,
+        #output
+        'Lot Pengadaan Barang EOQ Unit/Pesanan (qo)': qo,
+        'Re-Order Point ROP /Unit (r)': r,
+        'Selang Waktu /Hari (T)': T,
+        'Ongkos Inventori Total /Tahun': OT
+    }
+
+def model_q(code, description, indicator, p, A, h, Cu, D, s, L):
+    qo = math.sqrt((2*A*D)/h)  #Hitung qo
+    a = (h*qo)/(Cu*D) #Hitung alpha ke 1 dan SL
+    SL = s*math.sqrt(L)
+    DL = D*L
+    Za = norm.ppf(1 - a) # Hitung Za menggunakan PPF (Percent Point Function)
+    r = Za*SL + DL
+
+    iterasi = 1
+    while True: # mulai iterasi
+        r1 = r
+        fZa = norm.pdf(Za) #Hitung f(Za) atau ϕ(Za) menggunakan PDF (Probability Density Function)
+        phiZa = norm.cdf(Za) #Hitung Φ(Za) menggunakan CDF (Cumulative Distribution Function)
+        psiZa = fZa - Za*(1 - phiZa) #Hitung Psi Za
+
+        N = SL*(fZa - Za*psiZa) #Hitung N
+
+        qo = math.sqrt(2*D*(A + (Cu*N))/h) #Hitung q ke2
+        a = (h*qo)/(Cu*D) #Hitung alpha ke2
+        Za = norm.ppf(1 - a) # Hitung Za ke2 menggunakan PPF (Percent Point Function)
+
+        r2 = DL + Za*SL
+
+        perbandingan = (abs(r1 - r2) / ((r1 + r2) / 2)) * 100
+        r = r2
+
+        if perbandingan < 1 or iterasi == 10: break
+        iterasi += 1
+
+    f = D/qo
+    Ob = D*p
+    Op = f*A
+    Os = h*(0.5*qo + r - DL)
+    Ok = Cu*N
+
+    ss = Za*SL #Hitung Safety Stock
+    n = (1 - (N/DL))*100 #Hitung Tingkat Pelayanan
+    OT = D*p + (A*D/qo) + h*(1/2*qo + r - DL) + Cu*(D/qo)*N #Hitung Ongkos Inventory
+
+    return {
+        # base
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        # input
+        'Harga Barang Rp/Unit (p)': p,
+        'Ongkos Pesan Rp/Pesan (A)': A,
+        'Ongkos Simpan Barang Rp/Unit/Tahun (h)': h,
+        'Ongkos Kekurangan Barang Rp/Unit (Cu)': Cu,
+        'Rata-Rata Permintaan Unit/Tahun (D)': D,
+        'Standar Deviasi Permintaan Barang Unit/Tahun (s)': s,
+        'Lead Time /Tahun (L)': L,
+        # proses
+        'Iterasi': iterasi,
+        "Standar Deviasi Lead Time Unit/Tahun (SL)": SL,
+        "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)": DL,
+        "Frequensi Pemesanan (f)": f,
+        "Ongkos Pembelian (Ob) /Tahun": Ob,
+        "Ongkos Pemesanan (Op) /Tahun": Op,
+        "Ongkos Penyimpanan (Os) /Tahun": Os,
+        "Ongkos Kekurangan Inventori (Ok) /Tahun": Ok,
+        # output
+        'Lot Pengadaan Barang EOQ Unit/Pesanan (qo)': qo,
+        'Reorder Point ROP /Unit (r)': r,
+        'Safety Stock /Unit (ss)': ss,
+        'Ongkos Inventori Total /Tahun (OT)': OT,
+        'Tingkat Pelayanan %': n
+    }
+
+def model_poisson(code, description, indicator, p, A, h, Cu, D, s, L):
+    SL = s*math.sqrt(L)
+    qo = math.sqrt(2*(A*D)/h) #Hitung lot pemesanan
+    a = (h*qo)/(Cu*D) #Hitung alpha
     r = 0
 
-    #=> mulai iterasi
+    # Mulai iterasi
     for j in count():
         rx = 0
         lambd = D*L
 
-        #=> mulai loop
         while True:
             Px = poisson.cdf(rx, lambd)
-            #=> akhir loop 1-px <= alpha
-            if 1 - Px <= a: break
+            if 1 - Px <= a: break #Akhir loop 1-px <= alpha
             rx += 1
 
-        #=> akhir iterasi saat reorder iterasi sebelumnya == reorder iterasi saat ini
-        if r == rx:break
+        if r == rx:break #Akhir iterasi saat reorder iterasi sebelumnya == reorder iterasi saat ini
 
-        #=> update reorder, lot dan alpha
+        # Update reorder, lot dan alpha
         r = rx
-        qo = math.sqrt(2*D*((A + Cu*(a*qo))/h))
-        a = (h*qo)/(Cu*D)
+        qot = math.sqrt(2*D*((A + Cu*(a*qo))/h))
+        a = (h*qot)/(Cu*D)
 
-        #=> hentikan iterasi jika lebih dari 10x iterasi
-        if j > 10: break
+        if j > 10: break #Hentikan iterasi jika lebih dari 10x iterasi
         j += 1
 
-    #=> hitung safety stock, ongkos inventory dan tingkat pelayanan
-    ss = r - D*L
-    OT = D*p + A*D/qo + h*(0.5*qo + r - D*L) + Cu*a*D
-    n = (1 - a)*100
+    ss = r - D*L #Hitung safety stock
+    OT = D*p + A*D/qo + h*(0.5*qo + r - D*L) + Cu*a*D #Hitung Ongkos Inventory
+
+    n = (1 - a)*100 #Hitung Tingkat Pelayanan
     iterasi = j + 1
 
-    # hisil akhir
-    results = {
+    return {
         # base
         'Material Code': code or '',
         'Material Description': description or '',
@@ -770,21 +866,174 @@ def model_poisson(code, description, indicator, p, A, h, Cu, D, S, L):
         'Ongkos Simpan Rp/Unit/Tahun (h)': h,
         'Ongkos Kekurangan Rp/Unit (Cu)': Cu,
         'Rata-Rata Permintaan Unit/Tahun (D)': D,
-        'Standar Deviasi Permintaan Unit/Tahun (S)': S,
+        'Standar Deviasi Permintaan Unit/Tahun (s)': s,
         'Lead Time /tahun (L)': L,
         # proses
         'Iterasi': iterasi,
         'Nilai Alpha (a)': a,
         'Standar Deviasi Waktu Ancang-ancang Unit/Tahun (SL)': SL,
         # output
-        'Economic Order Quantity (EOQ)': qo,
-        'Reorder Point /Unit (ROP)': r,
-        'Safety Stock /Unit (SS)': ss,
+        'Economic Order Quantity EOQ Unit/Pesanan (qo)': qo,
+        'Reorder Point ROP /Unit (r)': r,
+        'Safety Stock /Unit (ss)': ss,
         'Ongkos Inventori /Tahun (OT)': OT,
         'Tingkat pelayanan % (n)': n
     }
 
-    return results
+def model_tchebycheff(code, description, indicator, p, Cu, a, s):
+    k =  math.pow(2*Cu/(p*s), 1/3)
+
+    qo = a + k*s
+
+    return {
+        #base
+        'Material Code': code or None,
+        'Material Description': description or None,
+        'ABC Indicator': indicator or None,
+        #input
+        'Ongkos pemakaian Rp/Unit/Hari (p)': p,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (Cu)': Cu,
+        'Rata-Rata Permintaan Barang Unit/Tahun (a)': a,
+        'Standar Deviasi Permintaan Barang Unit/Tahun (s)': s,
+        #proses
+        'Nilai K Model Tchebycheff': k,
+        #output
+        'Ukuran Lot Penyediaan (qo)': qo
+    }
+
+def model_minimasi_regret(code, description, indicator, H, L, m):
+    O = H*0.2
+    payoff = np.zeros((m + 1, m + 1))
+    for qi in range(m + 1):
+        for Dj in range(m + 1):
+            if qi >= Dj: payoff[qi, Dj] = (H*qi) - (O*(qi - Dj))
+            else: payoff[qi, Dj] = (H*qi) + (L*(Dj - qi))
+
+    penyesalan = np.zeros_like(payoff)
+    for qi in range(payoff.shape[0]):
+        for Dj in range(payoff.shape[1]):
+            if qi == Dj: penyesalan[qi,Dj] = 0
+            elif qi > Dj: penyesalan[qi,Dj] = ((qi - Dj)*H) - ((qi - Dj)*O)
+            elif qi < Dj: penyesalan[qi,Dj] = (Dj - qi)*H
+
+    df = pd.DataFrame(penyesalan, columns=[f'Kerusakan {i}' for i in range(m + 1)])
+    df['Pay-off Penyesalan'] = df.max(axis=1)
+
+    Eqi = min(df['Pay-off Penyesalan'])
+    qi = df['Pay-off Penyesalan'].idxmin()
+
+    return {
+        #base
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        #input
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': H,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': L,
+        'Jumlah Komponen Terpasang /Unit (m)': m,
+        #proses
+        'Harga Resale Rp/Unit/Hari (O)': O,
+        #output
+        'Ekspetasi Ongkos Inventory Minimum /Rp': Eqi,
+        'Ukuran Lot Penyediaan /Unit (qi)': qi
+    }
+
+def model_estimasi_probabilitas_linear(code, description, indicator, H, L, m):
+    O = H*0.2
+    payoff = np.zeros((m + 1, m + 1))
+    for qi in range(m + 1):
+        for Dj in range(m + 1):
+            if qi >= Dj: payoff[qi, Dj] = (H*qi) - (O*(qi - Dj))
+            else: payoff[qi, Dj] = (H*qi) + (L*(Dj - qi))
+
+    df = pd.DataFrame(payoff, columns=[f'Kerusakan {i}' for i in range(m + 1)])
+
+    dj = sum(range(m + 1))
+    for Dj in range(m + 1):
+        value = (m - Dj) / dj
+        df.at['P(Dj)', f'Kerusakan {Dj}'] = value
+
+    df['E(Qi)'] = 0.0  
+
+    for i in range(len(df.index) - 1):
+        E_qi = 0 
+        for j in range(m+1):
+            E_qi += df.loc['P(Dj)', f'Kerusakan {j}'] * df.iloc[i, j]
+        df.at[df.index[i], 'E(Qi)'] = E_qi
+
+    df.at['P(Dj)', 'E(Qi)'] = np.nan
+
+    return {
+        #base
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        #input
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': H,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': L,
+        'Jumlah Komponen Terpasang /Unit (m)': m,
+        #proses
+        'Harga Resale Rp/Unit/Hari (O)': O,
+        #output
+        'Ekspetasi Ongkos Inventory Minimum /Rp': min(df['E(Qi)']),
+        'Ukuran Lot Penyediaan /Unit (qi)': df['E(Qi)'].idxmin()
+    }
+
+def model_estimasi_probabilitas_hiperbolis(code, description, indicator, H, L, m):
+    O = H*0.2
+    beta = 4
+
+    payoff = np.zeros((m + 1, m + 1))
+    for qi in range(m + 1):
+        for Dj in range(m + 1):
+            if qi >= Dj: payoff[qi, Dj] = (H*qi) - (O*(qi - Dj))
+            else: payoff[qi, Dj] = (H*qi) + (L*(Dj - qi))
+
+    df = pd.DataFrame(payoff, columns=[f'Kerusakan {i}' for i in range(m + 1)])
+    max_Dj_beta_4 = 8
+    max_Dj_beta_5 = 10
+
+    sum_inverse = sum(1 / (beta * Dj) for Dj in range(1, m + 1))
+    for Dj in range(m + 1):
+        if Dj == 0:
+            value = 1 - sum_inverse
+            if beta == 4 and value > max_Dj_beta_4:
+                beta = 5
+                sum_inverse = sum(1 / (beta * Dj) for Dj in range(1, m + 1))
+                value = 1 - sum_inverse
+                if value > max_Dj_beta_5: break
+        else:
+            if beta == 4 and 1 / (beta * Dj) > max_Dj_beta_4: value = max_Dj_beta_4
+            elif beta == 5 and 1 / (beta * Dj) > max_Dj_beta_5: value = max_Dj_beta_5
+            else: value = 1 / (beta*Dj)
+
+        df.at['P(Dj)', f'Kerusakan {Dj}'] = value
+
+    df['E(Qi)'] = 0.0  
+
+    for i in range(len(df.index) - 1):  # -1 untuk tidak termasuk baris 'P(Dj)'
+        E_qi = 0  # Inisialisasi E_qi untuk baris ini
+        for j in range(m + 1):  # Menerapkan sum pada definisi E(Qi)
+            E_qi += df.loc['P(Dj)', f'Kerusakan {j}'] * df.iloc[i, j]
+        df.at[df.index[i], 'E(Qi)'] = E_qi
+
+    df.at['P(Dj)', 'E(Qi)'] = np.nan
+
+    return {
+        #base
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        #input
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': H,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': L,
+        'Jumlah Komponen Terpasang /Unit (m)': m,
+        #proses
+        'Harga Resale Rp/Unit/Hari (O)': O,
+        #output
+        'Ekspetasi Ongkos Inventory Minimum /Rp': min(df['E(Qi)']),
+        'Ukuran Lot Penyediaan /Unit (qi)': df['E(Qi)'].idxmin()
+    }
 
 def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
     #() function probabilitas kerusakan
@@ -816,17 +1065,12 @@ def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
     Ht = Ho
     Ct = Co
 
-    #=> mulai loop
     for t in t_values:
-        #=> hitung
         Ht =  (1 + i/100)*Ht
         Ct =  (1 + i/100)*Ct
-        #=> pilih probabilitas kerusakan
         P_t = probabilitas_type(t, t_values)
-        #=> hitung ekspektasi benefit
-        Bt = P_t*Ct
-        #=> hitung nilai benefit
-        BCRt = Bt/Ht
+        Bt = P_t*Ct #Hitung ekspektasi benefit
+        BCRt = Bt/Ht #Hitung nilai benefit
 
         #=> conditional statement benefit > 1 / benefit == waktu kerusakan
         if BCRt > 1 or t == len(t_values):
@@ -857,3 +1101,31 @@ def model_benefit_cost_ratio(code, description, indicator, Ho, Co, i, N, P):
     })
 
     return results
+
+# contoh dalam laporan
+# model wilson
+# D = 10,000, p = 8000, A = 1,000,000, L = 0.25, h = 2000
+# qo = 3,165, r = 2,500, T = 115, OT = 106,33
+# p <> 10,000 (60), qo <> 3,165 : 3,162 (60)
+# model q
+# D = 100,000, s = 10,000, L = 0.25, A = 2,500,000, p = 25,000, h = 5000, Cu = 100,000
+# qo = 21,260, r = 36,500, ss = 11,500, n = 96.48%, OT = 2,783,982,044 perbandingan <1 (71)
+# Za 2.525_py <> 2.554_lap (69), Za 2.37_py <> 2.35_lap (70), n = 66% ? 1-()* && D : 96% (1-())* (71) && D
+# model poisson
+# D = 4, s = 2, L = 0.25, A = 2,500, p = 25,000, h = 5000, Cu = 100,000
+# qo = 3,5, r = 3, ss = 2, n = 96%, OT = 133,887
+# ½qo1 <> 4/2 : 1/2*2, a <> 0.044 : 0.043, total <> 133,887 : 142,600_lap, 137,320.51_code
+# model tchebucheff
+# p = 1000,000, Cu = 5000,000, a = 0.33, s = 145
+# k = 1.26, qo = 2
+# rumus k <> hal 84 : hal 83
+# model non movinig
+# H = 5,000,000, L = 10,000,000, m = 5
+# qi = 3, Eqi = 12 | regret
+# qi = 1, Eqi = 1.33 | linear
+# qi = 1, 10.86 | hiperbolis # check
+# model bcr
+# Ho = 100, Co = 1000, i = 10, N = 5, P = uniform, linear, hiperbolik, kuadratis, kubik
+# BCRt = {1.33 | 0} {1.33 | 1.09} {1.19 | 1.09} {1.23 | 1.27} {1.33 | 1.13}
+# remark = {2 | 0} {2 | 6} {1 | 6} {3 | 7} {2 | 7}
+# bt <> 73.7 hal (102) : 220, bt <> 164 hal (106) : 218, pt <> 0.22 hal (108): 0.004

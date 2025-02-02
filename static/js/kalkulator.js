@@ -47,7 +47,7 @@ const calcManual = async (argModel) => {
             return;
         }
 
-        if (element.name !== "material_code" && element.name !== "material_description" && element.name !== "abc_indikator") {
+        if (element.name !== "code" && element.name !== "description" && element.name !== "indicator") {
             element.classList.add("placeholder-red-500");
             notification("show", `Silakan lengkapi form ${element.name}`, "failed");
             status = "failed";
@@ -68,13 +68,13 @@ const calcManual = async (argModel) => {
     const response = await postFetch("/api/get/calc/manual", { model: modelSet[argModel], items: dataForm });
 
     const indikatorResult = {
-        Q: ["Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", "Rata-Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", "Reorder Point (ROP) Unit", "Safety Stock (SS) Unit", "Frequensi Pemesanan (f)", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Ongkos Kekurangan Inventori (Ok) /Tahun", "Ongkos Inventori (OT) /Tahun"],
-        Poisson: ["Iterasi", "Nilai Alpha (a)", "Standar Deviasi Waktu Ancang-ancang Unit/Tahun (SL)", "Economic Order Quantity (EOQ)", "Reorder Point /Unit (ROP)", "Safety Stock /Unit (SS)", "Ongkos Inventori /Tahun (OT)", "Tingkat pelayanan % (n)"],
-        Wilson: ["Frequensi Pemesanan (f)", "Lot Pengadaan (EOQ) Unit/Pesanan", "Ongkos Inventori (OT) /Tahun", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Reorder Point (ROP) Unit", "Selang Waktu Pesan Kembali (Bulan)", "Selang Waktu Pesan Kembali (Hari)", "Selang Waktu Pesan Kembali (Tahun)"],
-        Tchebycheff: ["Lot Pemesanan Optimal (q0)", "Nilai K Model Tchebycheff"],
-        Regret: ["Harga Resale Komponen (O)", "Minimum Regret (Rp )", "Strategi Penyediaan Optimal (Unit)"],
-        Linear: ["Harga Resale Komponen (O)", "Ongkos Model Probabilistik Kerusakan", "Strategi Penyediaan Optimal (Unit)"],
-        NonLinear: ["Harga Resale Komponen (O)", "Ongkos Model Probabilistik Kerusakan", "Strategi Penyediaan Optimal (Unit)"],
+        Wilson: ["Frequensi Pemesanan (f)", "Ongkos Pembelian /Tahun (Ob)", "Ongkos Pemesanan /Tahun (Op)", "Ongkos Penyimpanan /Tahun (Os)", "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", "Re-Order Point ROP /Unit (r)", "Selang Waktu /Hari (T)", "Ongkos Inventori Total /Tahun"],
+        Q: ["Iterasi", "Standar Deviasi Lead Time Unit/Tahun (SL)", "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)", "Frequensi Pemesanan (f)", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Ongkos Kekurangan Inventori (Ok) /Tahun", "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", "Reorder Point ROP /Unit (r)", "Safety Stock /Unit (ss)", "Ongkos Inventori Total /Tahun (OT)", "Tingkat Pelayanan %"],
+        Poisson: ["Iterasi", "Nilai Alpha (a)", "Standar Deviasi Waktu Ancang-ancang Unit/Tahun (SL)", "Economic Order Quantity EOQ Unit/Pesanan (qo)", "Reorder Point ROP /Unit (r)", "Safety Stock /Unit (ss)", "Ongkos Inventori /Tahun (OT)", "Tingkat pelayanan % (n)"],
+        Tchebycheff: ["Nilai K Model Tchebycheff", "Ukuran Lot Penyediaan (qo)"],
+        Regret: ["Harga Resale Rp/Unit/Hari (O)", "Ekspetasi Ongkos Inventory Minimum /Rp", "Ukuran Lot Penyediaan /Unit (qi)"],
+        Linear: ["Harga Resale Rp/Unit/Hari (O)", "Ekspetasi Ongkos Inventory Minimum /Rp", "Ukuran Lot Penyediaan /Unit (qi)"],
+        NonLinear: ["Harga Resale Rp/Unit/Hari (O)", "Ekspetasi Ongkos Inventory Minimum /Rp", "Ukuran Lot Penyediaan /Unit (qi)"],
         BCR: ["Ongkos Pemakaian /Unit (Ht)", "Kerugian Komponen /Unit (Ct)", "Probabilitas Kerusakan P(t)", "Ekspektasi Benefit (Bt)", "Benefit Cost Ration", "Remark"],
     };
 
@@ -195,31 +195,29 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 225, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Permintaan Barang (D) Unit/Tahun", field: "Permintaan Barang (D) Unit/Tahun", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Harga Barang Rp/Unit (p)", field: "Harga Barang Rp/Unit (p)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pesan Rp/Unit (A)", field: "Ongkos Pesan Rp/Unit (A)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Simpan Barang Rp/Unit/Tahun (h)", field: "Ongkos Simpan Barang Rp/Unit/Tahun (h)", minWidth: 225, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Rata-Rata Permintaan Barang Unit/Tahun (D)", field: "Rata-Rata Permintaan Barang Unit/Tahun (D)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Lead Time /Tahun (L)", field: "Lead Time /Tahun (L)", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
             {
                 headerName: "Data Proses",
                 children: [
                     { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 195, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pembelian /Tahun (Ob)", field: "Ongkos Pembelian /Tahun (Ob)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pemesanan /Tahun (Op)", field: "Ongkos Pemesanan /Tahun (Op)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Penyimpanan /Tahun (Os)", field: "Ongkos Penyimpanan /Tahun (Os)", minWidth: 240, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Lot Pengadaan (EOQ) Unit/Pesanan", field: "Lot Pengadaan (EOQ) Unit/Pesanan", minWidth: 255, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Selang Waktu Pesan Kembali (Hari)", field: "Selang Waktu Pesan Kembali (Hari)", minWidth: 255, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Selang Waktu Pesan Kembali (Bulan)", field: "Selang Waktu Pesan Kembali (Bulan)", minWidth: 265, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Selang Waktu Pesan Kembali (Tahun)", field: "Selang Waktu Pesan Kembali (Tahun)", minWidth: 265, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", field: "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", minWidth: 255, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Re-Order Point ROP /Unit (r)", field: "Re-Order Point ROP /Unit (r)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Selang Waktu /Hari (T)", field: "Selang Waktu /Hari (T)", minWidth: 255, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Inventori Total /Tahun", field: "Ongkos Inventori Total /Tahun", minWidth: 265, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
         ];
@@ -234,34 +232,36 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 175, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pesan (A) /Pesan", field: "Ongkos Pesan (A) /Pesan", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Simpan (h) /Unit/Tahun", field: "Ongkos Simpan (h) /Unit/Tahun", minWidth: 225, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", field: "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Rata - Rata Permintaan Barang (D) Unit/Tahun", field: "Rata - Rata Permintaan Barang (D) Unit/Tahun", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", field: "Standar Deviasi Permintaan Barang (s) Unit/Tahun", minWidth: 355, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Lead Time (L) Tahun", field: "Lead Time (L) Tahun", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Harga Barang Rp/Unit (p)", field: "Harga Barang Rp/Unit (p)", minWidth: 175, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pesan Rp/Pesan (A)", field: "Ongkos Pesan Rp/Pesan (A)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Simpan Barang Rp/Unit/Tahun (h)", field: "Ongkos Simpan Barang Rp/Unit/Tahun (h)", minWidth: 225, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Kekurangan Barang Rp/Unit (Cu)", field: "Ongkos Kekurangan Barang Rp/Unit (Cu)", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Rata-Rata Permintaan Unit/Tahun (D)", field: "Rata-Rata Permintaan Unit/Tahun (D)", minWidth: 330, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Standar Deviasi Permintaan Barang Unit/Tahun (s)", field: "Standar Deviasi Permintaan Barang Unit/Tahun (s)", minWidth: 355, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Lead Time /Tahun (L)", field: "Lead Time /Tahun (L)", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
             {
                 headerName: "Data Proses",
                 children: [
-                    { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 230, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Kekurangan Inventori (Ok) /Tahun", field: "Ongkos Kekurangan Inventori (Ok) /Tahun", minWidth: 300, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", field: "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun", minWidth: 410, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", field: "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun", minWidth: 435, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Iterasi", field: "Iterasi", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Standar Deviasi Lead Time Unit/Tahun (SL)", field: "Standar Deviasi Lead Time Unit/Tahun (SL)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)", field: "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Frequensi Pemesanan (f)", field: "Frequensi Pemesanan (f)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pembelian (Ob) /Tahun", field: "Ongkos Pembelian (Ob) /Tahun", minWidth: 230, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pemesanan (Op) /Tahun", field: "Ongkos Pemesanan (Op) /Tahun", minWidth: 300, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Penyimpanan (Os) /Tahun", field: "Ongkos Penyimpanan (Os) /Tahun", minWidth: 410, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Kekurangan Inventori (Ok) /Tahun", field: "Ongkos Kekurangan Inventori (Ok) /Tahun", minWidth: 435, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", field: "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan", minWidth: 360, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Reorder Point (ROP) Unit", field: "Reorder Point (ROP) Unit", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Safety Stock (SS) Unit", field: "Safety Stock (SS) Unit", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Inventori (OT) /Tahun", field: "Ongkos Inventori (OT) /Tahun", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", field: "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", minWidth: 360, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Reorder Point ROP /Unit (r)", field: "Reorder Point ROP /Unit (r)", minWidth: 190, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Safety Stock /Unit (ss)", field: "Safety Stock /Unit (ss)", minWidth: 170, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Inventori Total /Tahun (OT)", field: "Ongkos Inventori Total /Tahun (OT)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Tingkat Pelayanan %", field: "Tingkat Pelayanan %", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
         ];
@@ -281,7 +281,7 @@ const aggridSheet = (agD) => {
                     { headerName: "Ongkos Simpan Rp/Unit/Tahun (h)", field: "Ongkos Simpan Rp/Unit/Tahun (h)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                     { headerName: "Ongkos Kekurangan Rp/Unit (Cu)", field: "Ongkos Kekurangan Rp/Unit (Cu)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                     { headerName: "Rata-Rata Permintaan Unit/Tahun (D)", field: "Rata-Rata Permintaan Unit/Tahun (D)", minWidth: 280, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Standar Deviasi Permintaan Unit/Tahun (S)", field: "Standar Deviasi Permintaan Unit/Tahun (S)", minWidth: 320, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Standar Deviasi Permintaan Unit/Tahun (s)", field: "Standar Deviasi Permintaan Unit/Tahun (s)", minWidth: 320, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                     { headerName: "Lead Time /tahun (L)", field: "Lead Time /tahun (L)", minWidth: 160, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
@@ -296,9 +296,9 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Economic Order Quantity (EOQ)", field: "Economic Order Quantity (EOQ)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Reorder Point /Unit (ROP)", field: "Reorder Point /Unit (ROP)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Safety Stock /Unit (SS)", field: "Safety Stock /Unit (SS)", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Economic Order Quantity EOQ Unit/Pesanan (qo)", field: "Economic Order Quantity EOQ Unit/Pesanan (qo)", minWidth: 250, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Reorder Point ROP /Unit (r)", field: "Reorder Point ROP /Unit (r)", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Safety Stock /Unit (ss)", field: "Safety Stock /Unit (ss)", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                     { headerName: "Ongkos Inventori /Tahun (OT)", field: "Ongkos Inventori /Tahun (OT)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                     { headerName: "Tingkat pelayanan % (n)", field: "Tingkat pelayanan % (n)", minWidth: 185, cellClass: "justify-end", valueFormatter: (params) => returnStrPersen(params) },
                 ],
@@ -315,14 +315,14 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Harga Barang (p) /Unit", field: "Harga Barang (p) /Unit", minWidth: 185, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Kerugian Ketidakadaan Barang (Cu) /Unit", field: "Kerugian Ketidakadaan Barang (Cu) /Unit", minWidth: 300, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Rata-Rata Permintaan Barang (alpha)", field: "Rata-Rata Permintaan Barang (alpha)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Standar Deviasi Permintaan Barang (s)", field: "Standar Deviasi Permintaan Barang (s)", minWidth: 280, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos pemakaian Rp/Unit/Hari (p)", field: "Ongkos pemakaian Rp/Unit/Hari (p)", minWidth: 185, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Kerugian Akibat Kerusakan Rp/Unit/Hari (Cu)", field: "Kerugian Akibat Kerusakan Rp/Unit/Hari (Cu)", minWidth: 300, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Rata-Rata Permintaan Barang Unit/Tahun (a)", field: "Rata-Rata Permintaan Barang Unit/Tahun (a)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Standar Deviasi Permintaan Barang Unit/Tahun (s)", field: "Standar Deviasi Permintaan Barang Unit/Tahun (s)", minWidth: 280, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
             { headerName: "Data Proses", children: [{ headerName: "Nilai K Model Tchebycheff", field: "Nilai K Model Tchebycheff", minWidth: 200, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
-            { headerName: "Output", children: [{ headerName: "Lot Pemesanan Optimal (q0)", field: "Lot Pemesanan Optimal (q0)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
+            { headerName: "Output", children: [{ headerName: "Ukuran Lot Penyediaan (qo)", field: "Ukuran Lot Penyediaan (qo)", minWidth: 210, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
         ];
     }
 
@@ -335,17 +335,17 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pemakaian Rp/Unit/Tahun (H)", field: "Ongkos Pemakaian Rp/Unit/Tahun (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", field: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Jumlah Komponen Terpasang /Unit (m)", field: "Jumlah Komponen Terpasang /Unit (m)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
+            { headerName: "Data Proses", children: [{ headerName: "Harga Resale Rp/Unit/Hari (O)", field: "Harga Resale Rp/Unit/Hari (O)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Minimum Regret (Rp )", field: "Minimum Regret (Rp )", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ekspetasi Ongkos Inventory Minimum /Rp", field: "Ekspetasi Ongkos Inventory Minimum /Rp", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ukuran Lot Penyediaan /Unit (qi)", field: "Ukuran Lot Penyediaan /Unit (qi)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
         ];
@@ -360,17 +360,17 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pemakaian Rp/Unit/Tahun (H)", field: "Ongkos Pemakaian Rp/Unit/Tahun (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", field: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Jumlah Komponen Terpasang /Unit (m)", field: "Jumlah Komponen Terpasang /Unit (m)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
+            { headerName: "Data Proses", children: [{ headerName: "Harga Resale Rp/Unit/Hari (O)", field: "Harga Resale Rp/Unit/Hari (O)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 285, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ekspetasi Ongkos Inventory Minimum /Rp", field: "Ekspetasi Ongkos Inventory Minimum /Rp", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ukuran Lot Penyediaan /Unit (qi)", field: "Ukuran Lot Penyediaan /Unit (qi)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
         ];
@@ -385,17 +385,17 @@ const aggridSheet = (agD) => {
             {
                 headerName: "Parameter Input",
                 children: [
-                    { headerName: "Ongkos Pemakaian Komponen (H)", field: "Ongkos Pemakaian Komponen (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Ongkos Kerugian Akibat Kerusakan (L)", field: "Ongkos Kerugian Akibat Kerusakan (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Harga Resale Komponen (O)", field: "Harga Resale Komponen (O)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Jumlah Komponen Terpasang (m)", field: "Jumlah Komponen Terpasang (m)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ongkos Pemakaian Rp/Unit/Tahun (H)", field: "Ongkos Pemakaian Rp/Unit/Tahun (H)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", field: "Kerugian Akibat Kerusakan Rp/Unit/Hari (L)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Jumlah Komponen Terpasang /Unit (m)", field: "Jumlah Komponen Terpasang /Unit (m)", minWidth: 220, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
+            { headerName: "Data Proses", children: [{ headerName: "Harga Resale Rp/Unit/Hari (O)", field: "Harga Resale Rp/Unit/Hari (O)", minWidth: 245, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) }] },
             {
                 headerName: "Output",
                 children: [
-                    { headerName: "Ongkos Model Probabilistik Kerusakan", field: "Ongkos Model Probabilistik Kerusakan", minWidth: 290, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
-                    { headerName: "Strategi Penyediaan Optimal (Unit)", field: "Strategi Penyediaan Optimal (Unit)", minWidth: 270, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ekspetasi Ongkos Inventory Minimum /Rp", field: "Ekspetasi Ongkos Inventory Minimum /Rp", minWidth: 180, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
+                    { headerName: "Ukuran Lot Penyediaan /Unit (qi)", field: "Ukuran Lot Penyediaan /Unit (qi)", minWidth: 260, cellClass: "justify-end", valueFormatter: (params) => returnFloat(params), comparator: (valueA, valueB) => comparatorGrid(valueA, valueB) },
                 ],
             },
         ];
@@ -558,49 +558,49 @@ const toolsQ = (header, headerAction, childContent) => {
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <span>Material Code</span>
-                            <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                            <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
 
                         <div class="flex flex-col">
                             <span>ABC Indicator</span>
-                            <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                            <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                     </div>
                     <div class="flex flex-col w-full">
                         <span>Material Description</span>
-                        <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                        <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                            <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                            <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                         </div>
                         <div class="flex flex-col">
                             <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                            <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                            <input name="p" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                         </div>
                     </div>
                     <div class="flex gap-2">                    
                         <div class="flex flex-col">
                             <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                            <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                            <input name="h" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                         </div>
                         <div class="flex flex-col">
                             <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                            <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                            <input name="A" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                         </div>
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Kekurangan Inventori (Cu) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_kekurangan_inventory_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="Cu" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Rata-Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="rata_rata_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="D" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Standar Deviasi Permintaan Barang (s) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="standar_deviasi_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="s" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                 </form>
 
@@ -625,40 +625,40 @@ const toolWilson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <span>Material Description</span>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="p" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="h" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                        <input name="A" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <div>Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                    <input name="permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                    <input name="D" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                 </div>
             </form>
 
@@ -683,48 +683,48 @@ const toolsPoisson = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <span>Material Description</span>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Lead Time (L) Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="lead_time_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                     <div class="flex flex-col">
                         <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                        <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="p" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <div>Rata-Rata Permintaan Barang (D) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                    <input name="rata_rata_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                    <input name="D" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                 </div>
                 <div class="flex flex-col">
                     <div>Standar Deviasi Permintaan Barang (s) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                    <input name="standar_deviasi_permintaan_barang_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                    <input name="s" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <div>Ongkos Pesan (A) Pesan <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_pesan_per_pesan" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
+                        <input name="A" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="pesan" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Simpan (h) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_simpan_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                        <input name="h" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <div>Ongkos Kekurangan Inventori (Cu) Unit/Tahun <span class="text-xs text-red-500">*</span></div>
-                    <input name="ongkos_kekurangan_inventory_unit_per_tahun" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
+                    <input name="Cu" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit/tahun" />
                 </div>
             </form>
 
@@ -749,32 +749,32 @@ const toolsTchebycheff = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <span>Material Description</span>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex flex-col">
                     <div>Harga Barang (p) Unit <span class="text-xs text-red-500">*</span></div>
-                    <input name="harga_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="p" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Standar Deviasi Permintaan Barang (s) <span class="text-xs text-red-500">*</span></div>
-                    <input name="standar_deviasi_permintaan_barang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="standar deviasi" />
+                    <input name="s" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="standar deviasi" />
                 </div>
                 <div class="flex flex-col">
                     <div>Kerugian Ketidakadaan Barang (Cu) Unit <span class="text-xs text-red-500">*</span></div>
-                    <input name="kerugian_ketidakadaan_barang_per_unit" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="Cu" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Rata-Rata Permintaan Barang (alpha) <span class="text-xs text-red-500">*</span></div>
-                    <input name="rata_rata_permintaan_barang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="alpha" />
+                    <input name="a" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="alpha" />
                 </div>
             </form>
 
@@ -799,28 +799,28 @@ const toolsNonMovingMinRegret = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <span>Material Description</span>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex flex-col">
                     <div>Ongkos Pemakaian Komponen (H) <span class="text-xs text-red-500">*</span></div>
-                    <input name="ongkos_pemakaian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="H" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Ongkos Kerugian Akibat Kerusakan (L) <span class="text-xs text-red-500">*</span></div>
-                    <input name="ongkos_kerugian_akibat_kerusakan" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Jumlah Komponen Terpasang (m) <span class="text-xs text-red-500">*</span></div>
-                    <input name="jumlah_komponen_terpasang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
+                    <input name="m" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
                 </div>
             </form>
 
@@ -845,28 +845,28 @@ const toolsNonMovingLinear = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <span>Material Code</span>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <span>ABC Indicator</span>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <span>Material Description</span>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex flex-col">
                     <div>Ongkos Pemakaian Komponen (H) <span class="text-xs text-red-500">*</span></div>
-                    <input name="ongkos_pemakaian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="H" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Ongkos Kerugian Akibat Kerusakan (L) <span class="text-xs text-red-500">*</span></div>
-                    <input name="ongkos_kerugian_akibat_kerusakan" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                    <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                 </div>
                 <div class="flex flex-col">
                     <div>Jumlah Komponen Terpasang (m) <span class="text-xs text-red-500">*</span></div>
-                    <input name="jumlah_komponen_terpasang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
+                    <input name="m" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
                 </div>
             </form>
 
@@ -891,28 +891,28 @@ const toolsNonMovingNonLinear = (header, headerAction, childContent) => {
                     <div class="flex gap-2">
                         <div class="flex flex-col">
                             <span>Material Code</span>
-                            <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                            <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                         <div class="flex flex-col">
                             <span>ABC Indicator</span>
-                            <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                            <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                         </div>
                     </div>
                     <div class="flex flex-col">
                         <span>Material Description</span>
-                        <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                        <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Pemakaian Komponen (H) <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_pemakaian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="H" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                     <div class="flex flex-col">
                         <div>Ongkos Kerugian Akibat Kerusakan (L) <span class="text-xs text-red-500">*</span></div>
-                        <input name="ongkos_kerugian_akibat_kerusakan" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
+                        <input name="L" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="unit" />
                     </div>
                     <div class="flex flex-col">
                         <div>Jumlah Komponen Terpasang (m) <span class="text-xs text-red-500">*</span></div>
-                        <input name="jumlah_komponen_terpasang" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
+                        <input name="m" oninput="numericInput(event)" type="text" class="py-2 w-full px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="jumlah" />
                     </div>
                 </form>
 
@@ -937,41 +937,41 @@ const toolsBcr = (header, headerAction, childContent) => {
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Material Code</h1>
-                        <input name="material_code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="code" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                     <div class="flex flex-col">
                         <h1>ABC Indicator</h1>
-                        <input name="abc_indikator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
+                        <input name="indicator" type="text" class="py-2 w-64 px-2 border rounded" placeholder="optional" />
                     </div>
                 </div>
                 <div class="flex flex-col">
                     <h1>Material Description</h1>
-                    <input name="material_description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
+                    <input name="description" type="text" class="py-2 w-full px-2 border rounded" placeholder="optional" />
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Harga Komponen (Ho) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="harga_komponen" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="harga" />
+                        <input name="Ho" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="harga" />
                     </div>
                     <div class="flex flex-col">
                         <h1>Kerugian Komponen (Co) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="kerugian_komponen" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="kerugian" />
+                        <input name="Co" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="kerugian" />
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Suku Bunga (I) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="suku_bunga" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="suku bunga" />
+                        <input name="i" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="suku bunga" />
                     </div>
                     <div class="flex flex-col">
                         <h1>Waktu Sisa Operasi (tahun) <span class="text-xs text-red-500">*</span></h1>
-                        <input name="waktu_sisa_operasi" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
+                        <input name="N" oninput="numericInput(event)" type="text" class="py-2 w-64 px-2 border rounded" inputmode="numeric" pattern="[0-9]*" placeholder="tahun" />
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <div class="flex flex-col">
                         <h1>Pola Probabilitas <span class="text-xs text-red-500">*</span></h1>
-                        <select name="probabilitas" class="py-2 w-64 px-2 border rounded">
+                        <select name="P" class="py-2 w-64 px-2 border rounded">
                             <option value="uniform">Uniform</option>
                             <option value="linear">Linear</option>
                             <option value="hiperbolik">Hiperbolik</option>

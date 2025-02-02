@@ -31,109 +31,109 @@ def manual_calculation(data_request):
 
     if model == 'model q':
         params = (            
-            convert(items['rata_rata_permintaan_barang_unit_per_tahun']),
-            convert(items['lead_time_per_tahun']),
-            convert(items['standar_deviasi_permintaan_barang_unit_per_tahun']),
-            convert(items['ongkos_pesan_per_pesan']),
-            convert(items['harga_barang_per_unit']),
-            convert(items['ongkos_simpan_unit_per_tahun']),
-            convert(items['ongkos_kekurangan_inventory_unit_per_tahun']),
-            items.get('material_code') or None,
-            items.get('material_description') or None,
-            items.get('abc_indikator') or None,
+            items.get('code') or None,
+            items.get('description') or None,
+            items.get('indicator') or None,
+            convert(items['p']),
+            convert(items['A']),
+            convert(items['h']),
+            convert(items['Cu']),
+            convert(items['D']),
+            convert(items['s']),
+            convert(items['L']),
         )
 
-        data_calc = calc.Model_Q(*params)
+        data_calc = calc.model_q(*params)
 
     if model == "model wilson":
         params = (
-            convert(items["permintaan_barang_unit_per_tahun"]),
-            convert(items["harga_barang_per_unit"]),
-            convert(items["ongkos_pesan_per_pesan"]),
-            convert(items["lead_time_per_tahun"]),
-            convert(items["ongkos_simpan_unit_per_tahun"]),
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikato") or None,
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["p"]),
+            convert(items["A"]),
+            convert(items["h"]),
+            convert(items["D"]),
+            convert(items["L"]),
         )
 
-        data_calc = calc.Model_Wilson(*params)
+        data_calc = calc.model_wilson(*params)
 
     if model == "model poisson":
         params = (            
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikato") or None,
-            convert(items["harga_barang_per_unit"]),
-            convert(items["ongkos_pesan_per_pesan"]),
-            convert(items["ongkos_simpan_unit_per_tahun"]),
-            convert(items["ongkos_kekurangan_inventory_unit_per_tahun"]),
-            convert(items["rata_rata_permintaan_barang_unit_per_tahun"]),
-            convert(items["standar_deviasi_permintaan_barang_unit_per_tahun"]),
-            convert(items["lead_time_per_tahun"]),
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["p"]),
+            convert(items["A"]),
+            convert(items["h"]),
+            convert(items["Cu"]),
+            convert(items["D"]),
+            convert(items["s"]),
+            convert(items["L"]),
         )
 
         data_calc = calc.model_poisson(*params)
 
     if model == "model tchebycheff":
         params = (
-            convert(items["harga_barang_per_unit"]),
-            convert(items["kerugian_ketidakadaan_barang_per_unit"]),
-            convert(items["standar_deviasi_permintaan_barang"]),
-            convert(items["rata_rata_permintaan_barang"]),
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikator") or None,
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["p"]),
+            convert(items["Cu"]),
+            convert(items["a"]),
+            convert(items["s"]),
         )
 
-        data_calc = calc.Model_Tchebycheff_TakTentu(*params)
+        data_calc = calc.model_tchebycheff(*params)
 
     if model == "model non moving min max regret":
         params = (
-            convert(items["ongkos_pemakaian_komponen"]),
-            convert(items["ongkos_kerugian_akibat_kerusakan"]),
-            convert(items["jumlah_komponen_terpasang"]),
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikator") or None,
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["H"]),
+            convert(items["L"]),
+            convert(items["m"]),
         )
 
-        data_calc = calc.Model_MinMaxRegret(*params)
+        data_calc = calc.model_minimasi_regret(*params)
 
     if model == "model non moving linear":
         params = (
-            convert(items["ongkos_pemakaian_komponen"]),
-            convert(items["ongkos_kerugian_akibat_kerusakan"]),
-            convert(items["jumlah_komponen_terpasang"]),
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikator") or None,
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["H"]),
+            convert(items["L"]),
+            convert(items["m"]),
         )
 
-        data_calc = calc.model_kerusakan_linear(*params)
+        data_calc = calc.model_estimasi_probabilitas_hiperbolis(*params)
 
     if model == "model non moving non linear":
         params = (
-            convert(items["ongkos_pemakaian_komponen"]),
-            convert(items["ongkos_kerugian_akibat_kerusakan"]),
-            convert(items["jumlah_komponen_terpasang"]),
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikator") or None,
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["H"]),
+            convert(items["L"]),
+            convert(items["m"]),
         )
 
-        data_calc = calc.model_kerusakan_non_linear(*params)
+        data_calc = calc.model_estimasi_probabilitas_hiperbolis(*params)
 
     if model == "model bcr":
         params = (
-            items.get("material_code") or None,
-            items.get("material_description") or None,
-            items.get("abc_indikator") or None,
-            convert(items["harga_komponen"]),
-            convert(items["kerugian_komponen"]),
-            convert(items["suku_bunga"]),
-            convert(items["waktu_sisa_operasi"]),
-            items.get("probabilitas"),
+            items.get("code") or None,
+            items.get("description") or None,
+            items.get("indicator") or None,
+            convert(items["Ho"]),
+            convert(items["Co"]),
+            convert(items["i"]),
+            convert(items["N"]),
+            items.get("P"),
         )
 
         data_calc = calc.model_benefit_cost_ratio(*params)
@@ -153,17 +153,17 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (
-                convert(item["Permintaan Barang (D) Unit/Tahun"]),
-                convert(item["Harga Barang (p) /Unit"]),
-                convert(item["Ongkos Pesan (A) /Pesan"]),
-                convert(item["Lead Time (L) Tahun"]),
-                convert(item["Ongkos Simpan (h) /Unit/Tahun"]),
                 item.get("Material Code") or None,
                 item.get("Material Description") or None,
                 item.get("ABC Indicator") or None,
+                convert(item["Harga Barang (p) /Unit"]),
+                convert(item["Ongkos Pesan (A) /Pesan"]),
+                convert(item["Ongkos Simpan (h) /Unit/Tahun"]),
+                convert(item["Permintaan Barang (D) Unit/Tahun"]),
+                convert(item["Lead Time (L) Tahun"]),
             )
 
-            data_calc.append(calc.Model_Wilson(*params))
+            data_calc.append(calc.model_wilson(*params))
 
     if model == "model tchebycheff":
         required_keys = ["Harga Barang (p) /Unit","Kerugian Ketidakadaan Barang (Cu) /Unit","Standar Deviasi Permintaan Barang (s)","Rata - Rata Permintaan Barang (alpha)"]
@@ -174,16 +174,16 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (
-                convert(item["Harga Barang (p) /Unit"]),
-                convert(item["Kerugian Ketidakadaan Barang (Cu) /Unit"]),
-                convert(item["Standar Deviasi Permintaan Barang (s)"]),
-                convert(item["Rata - Rata Permintaan Barang (alpha)"]),
                 item.get("Material Code") or None,
                 item.get("Material Description") or None,
                 item.get("ABC Indicator") or None,
+                convert(item["Harga Barang (p) /Unit"]),
+                convert(item["Kerugian Ketidakadaan Barang (Cu) /Unit"]),
+                convert(item["Rata - Rata Permintaan Barang (alpha)"]),
+                convert(item["Standar Deviasi Permintaan Barang (s)"]),
             )
 
-            data_calc.append(calc.Model_Tchebycheff_TakTentu(*params))
+            data_calc.append(calc.model_tchebycheff(*params))
 
     if model == "model q":
         required_keys = ["Rata - Rata Permintaan Barang (D) Unit/Tahun","Lead Time (L) Tahun","Standar Deviasi Permintaan Barang (s) Unit/Tahun","Ongkos Pesan (A) /Pesan","Harga Barang (p) /Unit","Ongkos Simpan (h) /Unit/Tahun","Ongkos Kekurangan Inventori (Cu) /Unit/Tahun","Material Code","Material Description","ABC Indicator"]
@@ -194,19 +194,19 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (            
-                convert(item['Rata - Rata Permintaan Barang (D) Unit/Tahun']),
-                convert(item['Lead Time (L) Tahun']),
-                convert(item['Standar Deviasi Permintaan Barang (s) Unit/Tahun']),
-                convert(item['Ongkos Pesan (A) /Pesan']),
-                convert(item['Harga Barang (p) /Unit']),
-                convert(item['Ongkos Simpan (h) /Unit/Tahun']),
-                convert(item['Ongkos Kekurangan Inventori (Cu) /Unit/Tahun']),
                 item.get('Material Code') or None,
                 item.get('Material Description') or None,
                 item.get('ABC Indicator') or None,
+                convert(item['Harga Barang (p) /Unit']),
+                convert(item['Ongkos Pesan (A) /Pesan']),
+                convert(item['Ongkos Simpan (h) /Unit/Tahun']),
+                convert(item['Ongkos Kekurangan Inventori (Cu) /Unit/Tahun']),
+                convert(item['Rata - Rata Permintaan Barang (D) Unit/Tahun']),
+                convert(item['Standar Deviasi Permintaan Barang (s) Unit/Tahun']),
+                convert(item['Lead Time (L) Tahun']),
             )
 
-            data_calc.append(calc.Model_Q(*params))
+            data_calc.append(calc.model_q(*params))
 
     if model == "model poisson":
         required_keys = ["Rata - Rata Permintaan Barang (D) Unit/Tahun","Standar Deviasi Permintaan Barang (s) Unit/Tahun","Lead Time (L) Tahun","Ongkos Pesan (A) /Pesan","Harga Barang (p) /Unit","Ongkos Simpan (h) /Unit/Tahun","Ongkos Kekurangan Inventori (Cu) /Unit/Tahun",]
@@ -239,15 +239,15 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (
-                convert(item["Ongkos Pemakaian Komponen (H)"]),
-                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
-                convert(item["Jumlah Komponen Terpasang (m)"]),
                 item.get("Material Code") or None,
                 item.get("Material Description") or None,
                 item.get("ABC Indicator") or None,
+                convert(item["Ongkos Pemakaian Komponen (H)"]),
+                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
+                convert(item["Jumlah Komponen Terpasang (m)"]),
             )
 
-            data_calc.append(calc.Model_MinMaxRegret(*params))
+            data_calc.append(calc.model_minimasi_regret(*params))
 
     if model == "model non moving linear":
         required_keys = ["Ongkos Pemakaian Komponen (H)", "Ongkos Kerugian Akibat Kerusakan (L)", "Jumlah Komponen Terpasang (m)"]
@@ -257,15 +257,15 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (
-                convert(item["Ongkos Pemakaian Komponen (H)"]),
-                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
-                convert(item["Jumlah Komponen Terpasang (m)"]),
                 item.get("Material Code") or None,
                 item.get("Material Description") or None,
                 item.get("ABC Indicator") or None,
+                convert(item["Ongkos Pemakaian Komponen (H)"]),
+                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
+                convert(item["Jumlah Komponen Terpasang (m)"]),
             )
 
-            data_calc.append(calc.model_kerusakan_linear(*params))
+            data_calc.append(calc.model_estimasi_probabilitas_linear(*params))
 
     if model == "model non moving non linear":
         required_keys = ["Ongkos Pemakaian Komponen (H)", "Ongkos Kerugian Akibat Kerusakan (L)", "Jumlah Komponen Terpasang (m)"]
@@ -275,15 +275,15 @@ def array_calculation(data_request, model):
                 return {'status': 'error', 'message': f"Missing keys: {', '.join(missing_keys)}"}
 
             params = (
-                convert(item["Ongkos Pemakaian Komponen (H)"]),
-                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
-                convert(item["Jumlah Komponen Terpasang (m)"]),
                 item.get("Material Code") or None,
                 item.get("Material Description") or None,
                 item.get("ABC Indicator") or None,
+                convert(item["Ongkos Pemakaian Komponen (H)"]),
+                convert(item["Ongkos Kerugian Akibat Kerusakan (L)"]),
+                convert(item["Jumlah Komponen Terpasang (m)"]),
             )
 
-            data_calc.append(calc.model_kerusakan_non_linear(*params))
+            data_calc.append(calc.model_estimasi_probabilitas_hiperbolis(*params))
 
     if model == "model bcr":
         required_keys = ["Harga Komponen (Ho)", "Kerugian Komponen (Co)", "Suku Bunga (I)", "Waktu Sisa Operasi (tahun)"]
@@ -623,151 +623,139 @@ def processing_classification(data):
 
 # proses deterministik
 def deterministrik_model(deterministik_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(deterministik_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(deterministik_array): material_code_list.append(item["Material_Code"])
 
-    result_deterministik = []
+    # ambil data dari database
     product = db.get_product_model(material_code_list)
-
     if product[0] == "failed": return
 
-    df1 = pd.DataFrame(deterministik_array)
-    df2 = pd.DataFrame(product[1])
+    # gabungkan data
+    df_array = pd.DataFrame(deterministik_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_pesan'] = df['harga_barang'].apply(lambda x: 5000000 if x > 100000000 else 1000000)
+    df.loc[:, 'ongkos_simpan'] = df['harga_barang'] * 0.15
+    df = df.rename(columns={'Rata_Rata': 'rata_rata_permintaan'})
+    df['lead_time'] = pd.to_numeric(df['lead_time'], errors='coerce') / 12
 
-    df2_clean = df2.drop_duplicates(subset='material_code')
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
+    result_deterministik = [] 
 
-    merged_df = merged_df.rename(columns={"Rata_Rata": "Permintaan Barang (D) Unit/Tahun"})
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-    merged_df = merged_df.rename(columns={"lead_time": "Estimasi Lead Time (Mon)"})
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        harga_barang = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        ongkos_pesan = int(row["ongkos_simpan"]) if not pd.isna(row["ongkos_simpan"]) else 0
+        ongkos_simpan = float(row["ongkos_simpan"]) if not pd.isna(row["ongkos_simpan"]) else 0
+        rata_rata_permintaan = float(row["rata_rata_permintaan"]) if not pd.isna(row["rata_rata_permintaan"]) else 0
+        lead_time = float(row["lead_time"]) if not pd.isna(row["lead_time"]) else 0.0
 
-    merged_df['Estimasi Lead Time (Mon)'] = pd.to_numeric(merged_df['Estimasi Lead Time (Mon)'], errors='coerce')
-    merged_df.loc[:, 'Lead Time (L) Tahun'] = merged_df['Estimasi Lead Time (Mon)'] / 12
+        return_null = {
+            "Material Code": code,
+            "Material Description": description,
+            "ABC Indicator": indicator,
+            'Harga Barang Rp/Unit (p)': harga_barang,
+            'Ongkos Pesan Rp/Unit (A)': ongkos_pesan,
+            'Ongkos Simpan Barang Rp/Unit/Tahun (h)': ongkos_simpan,
+            'Rata-Rata Permintaan Barang Unit/Tahun (D)': rata_rata_permintaan,
+            'Lead Time /Tahun (L)': lead_time,
+            'Frequensi Pemesanan (f)': '',
+            "Ongkos Pembelian /Tahun (Ob)": '',
+            "Ongkos Pemesanan /Tahun (Op)": '',
+            "Ongkos Penyimpanan /Tahun (Os)": '',
+            'Lot Pengadaan Barang EOQ Unit/Pesanan (qo)': '',
+            'Re-Order Point ROP /Unit (r)': '',
+            'Selang Waktu /Hari (T)': '',
+            'Ongkos Inventori Total /Tahun': ''
+        }
 
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Ongkos Pesan (A) /Pesan'] = merged_df['Harga Barang (p) /Unit'].apply(lambda x: 5000000 if x > 100000000 else 1000000)
+        if harga_barang == 0: return return_null
+        try: return calc.model_wilson(code, description, indicator, harga_barang, ongkos_pesan, ongkos_simpan, rata_rata_permintaan, lead_time)
+        except Exception as e: return return_null
 
-    merged_df.loc[:, 'Ongkos Simpan (h) /Unit/Tahun'] = merged_df['Harga Barang (p) /Unit'] * 0.15
-    for index, row in merged_df.iterrows():
-        permintaan_barang = float(row["Permintaan Barang (D) Unit/Tahun"]) if not pd.isna(row["Permintaan Barang (D) Unit/Tahun"]) else 0
-        harga_barang = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        ongkos_pesan = int(row["Ongkos Pesan (A) /Pesan"]) if not pd.isna(row["Ongkos Pesan (A) /Pesan"]) else 0
-        lead_time = float(row["Lead Time (L) Tahun"]) if not pd.isna(row["Lead Time (L) Tahun"]) else 0.0
-        ongkos_simpan = float(row["Ongkos Simpan (h) /Unit/Tahun"]) if not pd.isna(row["Ongkos Simpan (h) /Unit/Tahun"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_deterministik.append(calc.Model_Wilson(permintaan_barang,harga_barang, ongkos_pesan, lead_time, ongkos_simpan, material_code,material_description,abc_indikator))
-
-        except Exception as e:
-            result_deterministik.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Permintaan Barang (D) Unit/Tahun": permintaan_barang,
-                "Harga Barang (p) /Unit": harga_barang,
-                "Ongkos Pesan (A) /Pesan": ongkos_pesan,
-                "Lead Time (L) Tahun": lead_time,
-                "Ongkos Simpan (h) /Unit/Tahun": ongkos_simpan,
-                "Lot Pengadaan (EOQ) Unit/Pesanan": "",
-                "Reorder Point (ROP) Unit": "",
-                "Selang Waktu Pesan Kembali (Tahun)": "",
-                "Selang Waktu Pesan Kembali (Bulan)": "",
-                "Selang Waktu Pesan Kembali (Hari)": "",
-                "Frequensi Pemesanan (f)": "",
-                "Ongkos Pembelian (Ob) /Tahun": "",
-                "Ongkos Pemesanan (Op) /Tahun": "",
-                "Ongkos Penyimpanan (Os) /Tahun": "",
-                "Ongkos Inventori (OT) /Tahun": ""
-            })
-
+    result_deterministik = df.apply(process_row, axis=1).tolist()
     return result_deterministik
 
 # proses normal
 def normal_model(normal_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(normal_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(normal_array): material_code_list.append(item["Material_Code"])
+
+    # ambil data dari database
+    product = db.get_product_model(material_code_list)
+    if product[0] == "failed": return
+
+    # gabungkan data
+    df_array = pd.DataFrame(normal_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
+
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_pesan'] = df['harga_barang'].apply(lambda x: 5000000 if x > 100000000 else 1000000)
+    df.loc[:, 'ongkos_simpan'] = df['harga_barang'] * 0.15
+    df.loc[:, 'ongkos_kekurangan'] = 3720000000
+    df = df.rename(columns={'Rata_Rata': 'rata_rata_permintaan'})
+    df = df.rename(columns={"Standar_Deviasi": "standar_deviasi"})
+    df['lead_time'] = pd.to_numeric(df['lead_time'], errors='coerce') / 12
 
     result_normal = []
 
-    product = db.get_product_model(material_code_list)
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        harga_barang = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        ongkos_pesan = int(row["ongkos_simpan"]) if not pd.isna(row["ongkos_simpan"]) else 0
+        ongkos_simpan = float(row["ongkos_simpan"]) if not pd.isna(row["ongkos_simpan"]) else 0
+        ongkos_kekurangan = int(row["ongkos_kekurangan"]) if not pd.isna(row["ongkos_kekurangan"]) else 0
+        rata_rata_permintaan = float(row["rata_rata_permintaan"]) if not pd.isna(row["rata_rata_permintaan"]) else 0
+        standar_deviasi = float(row["standar_deviasi"]) if not pd.isna(row["standar_deviasi"]) else 0
+        lead_time = float(row["lead_time"]) if not pd.isna(row["lead_time"]) else 0.0
 
-    if product[0] == "failed": return
+        return_null = {
+            'Material Code': code,
+            'Material Description': description,
+            'ABC Indicator': indicator,
+            'Harga Barang Rp/Unit (p)': harga_barang,
+            'Ongkos Pesan Rp/Pesan (A)': ongkos_pesan,
+            'Ongkos Simpan Barang Rp/Unit/Tahun (h)': ongkos_simpan,
+            'Ongkos Kekurangan Barang Rp/Unit (Cu)': ongkos_kekurangan,
+            'Rata-Rata Permintaan Unit/Tahun (D)': rata_rata_permintaan,
+            'Standar Deviasi Permintaan Barang Unit/Tahun (s)': standar_deviasi,
+            'Lead Time /Tahun (L)': lead_time,
+            'Iterasi': '',
+            "Standar Deviasi Lead Time Unit/Tahun (SL)": '',
+            "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)": '',
+            "Frequensi Pemesanan (f)": '',
+            "Ongkos Pembelian (Ob) /Tahun": '',
+            "Ongkos Pemesanan (Op) /Tahun": '',
+            "Ongkos Penyimpanan (Os) /Tahun": '',
+            "Ongkos Kekurangan Inventori (Ok) /Tahun": '',
+            'Lot Pengadaan Barang EOQ Unit/Pesanan (qo)': '',
+            'Reorder Point ROP /Unit (r)': '',
+            'Safety Stock /Unit (ss)': '',
+            'Ongkos Inventori Total /Tahun (OT)': '',
+            'Tingkat Pelayanan %': ''
+        }
 
-    df1 = pd.DataFrame(normal_array)
-    df2 = pd.DataFrame(product[1])
+        if harga_barang == 0: return return_null
+        try: return calc.model_q(code, description, indicator, harga_barang, ongkos_pesan, ongkos_simpan, ongkos_kekurangan, rata_rata_permintaan, standar_deviasi, lead_time)
+        except Exception as e: return return_null
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
-
-    df2_clean = df2.drop_duplicates(subset='material_code')
-
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
-
-    merged_df = merged_df.rename(columns={"Rata_Rata": "Rata - Rata Permintaan Barang (D) Unit/Tahun"})
-    merged_df = merged_df.rename(columns={"Standar_Deviasi": "Standar Deviasi Permintaan Barang (s) Unit/Tahun"})
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Ongkos Pesan (A) /Pesan'] = merged_df['Harga Barang (p) /Unit'].apply(lambda x: 5000000 if x > 100000000 else 1000000)
-
-    merged_df = merged_df.rename(columns={"lead_time": "Estimasi Lead Time (Mon)"})
-    merged_df['Estimasi Lead Time (Mon)'] = pd.to_numeric(merged_df['Estimasi Lead Time (Mon)'], errors='coerce')
-    merged_df.loc[:, 'Lead Time (L) Tahun'] = merged_df['Estimasi Lead Time (Mon)'] / 12
-
-    merged_df.loc[:, 'Ongkos Simpan (h) /Unit/Tahun'] = merged_df['Harga Barang (p) /Unit'] * 0.15
-
-    merged_df.loc[:, 'Ongkos Kekurangan Inventori (Cu) /Unit/Tahun'] = 3720000000
-
-    for index, row in merged_df.iterrows():
-        rata_rata_permintaan_barang = float(row["Rata - Rata Permintaan Barang (D) Unit/Tahun"]) if not pd.isna(row["Rata - Rata Permintaan Barang (D) Unit/Tahun"]) else 0
-        lead_time = float(row["Lead Time (L) Tahun"]) if not pd.isna(row["Lead Time (L) Tahun"]) else 0.0
-        standar_deviasi = float(row["Standar Deviasi Permintaan Barang (s) Unit/Tahun"]) if not pd.isna(row["Standar Deviasi Permintaan Barang (s) Unit/Tahun"]) else 0
-        ongkos_pesan = int(row["Ongkos Pesan (A) /Pesan"]) if not pd.isna(row["Ongkos Pesan (A) /Pesan"]) else 0
-        harga_barang = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        ongkos_simpan = float(row["Ongkos Simpan (h) /Unit/Tahun"]) if not pd.isna(row["Ongkos Simpan (h) /Unit/Tahun"]) else 0
-        ongkos_kekurangan_inventori_setiap_unit_barang = int(row["Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"]) if not pd.isna(row["Ongkos Kekurangan Inventori (Cu) /Unit/Tahun"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_normal.append(calc.Model_Q(rata_rata_permintaan_barang , lead_time, standar_deviasi, ongkos_pesan ,harga_barang,ongkos_simpan, ongkos_kekurangan_inventori_setiap_unit_barang,material_code,material_description,abc_indikator))
-
-        except Exception as e:
-            result_normal.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Rata - Rata Permintaan Barang (D) Unit/Tahun": rata_rata_permintaan_barang,
-                "Standar Deviasi Permintaan Barang (s) Unit/Tahun": standar_deviasi,
-                "Lead Time (L) Tahun": lead_time,
-                "Ongkos Pesan (A) /Pesan": ongkos_pesan,
-                "Harga Barang (p) /Unit": harga_barang,
-                "Ongkos Simpan (h) /Unit/Tahun": ongkos_simpan,
-                "Ongkos Kekurangan Inventori (Cu) /Unit/Tahun": ongkos_kekurangan_inventori_setiap_unit_barang,
-                "Standar Deviasi Permintaan Barang Waktu Lead Time (SL) Unit/Tahun": "",
-                "Rata - Rata Permintaan Barang Waktu Lead Time (DL) Unit/Tahun": "",
-                "Lot Pengadaan Optimum Barang (EOQ) Unit/Pesanan": "",
-                "Reorder Point (ROP) Unit": "",
-                "Safety Stock (SS) Unit": "",
-                "Frequensi Pemesanan (f)": "",
-                "Ongkos Pembelian (Ob) /Tahun": "",
-                "Ongkos Pemesanan (Op) /Tahun": "",
-                "Ongkos Penyimpanan (Os) /Tahun": "",
-                "Ongkos Kekurangan Inventori (Ok) /Tahun": "",
-                "Ongkos Inventori (OT) /Tahun": ""
-            })
-
+    result_normal = df.apply(process_row, axis=1).tolist()
     return result_normal
 
 # proes poisson
@@ -841,224 +829,212 @@ def poisson_model(poisson_array):
 
 # proes tak tentu
 def taktentu_model(taktentu_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(taktentu_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(taktentu_array): material_code_list.append(item["Material_Code"])
+
+    # ambil data dari database
+    product = db.get_product_model(material_code_list)
+    if product[0] == "failed": return
+
+    # gabungkan data
+    df_array = pd.DataFrame(taktentu_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
+
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_kekurangan'] = 3720000000
+    df = df.rename(columns={'Rata_Rata': 'rata_rata_permintaan'})
+    df = df.rename(columns={"Standar_Deviasi": "standar_deviasi"})
 
     result_taktentu = []
 
-    product = db.get_product_model(material_code_list)
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        ongkos_pemakaian = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        kerugian = int(row["ongkos_kekurangan"]) if not pd.isna(row["ongkos_kekurangan"]) else 0
+        rata_rata_permintaan = float(row["rata_rata_permintaan"]) if not pd.isna(row["rata_rata_permintaan"]) else 0
+        standar_deviasi = float(row["standar_deviasi"]) if not pd.isna(row["standar_deviasi"]) else 0
 
-    if product[0] == "failed": return
+        return_null = {
+            'Material Code': code or None,
+            'Material Description': description or None,
+            'ABC Indicator': indicator or None,
+            'Ongkos pemakaian Rp/Unit/Hari (p)': ongkos_pemakaian,
+            'Kerugian Akibat Kerusakan Rp/Unit/Hari (Cu)': kerugian,
+            'Rata-Rata Permintaan Barang Unit/Tahun (a)': rata_rata_permintaan,
+            'Standar Deviasi Permintaan Barang Unit/Tahun (s)': standar_deviasi,
+            'Nilai K Model Tchebycheff': '',
+            'Ukuran Lot Penyediaan (qo)': ''
+        }
 
-    df1 = pd.DataFrame(taktentu_array)
-    df2 = pd.DataFrame(product[1])
+        if ongkos_pemakaian == 0: return return_null
+        try: return calc.model_tchebycheff(code, description, indicator, ongkos_pemakaian, kerugian, rata_rata_permintaan, standar_deviasi)
+        except Exception as e: return return_null
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
-
-    df2_clean = df2.drop_duplicates(subset='material_code')
-
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
-
-    merged_df = merged_df.rename(columns={"Rata_Rata": "Rata - Rata Permintaan Barang (alpha)"})
-    merged_df = merged_df.rename(columns={"Standar_Deviasi": "Standar Deviasi Permintaan Barang (s)"})
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Kerugian Ketidakadaan Barang (Cu) /Unit'] = 3720000000
-
-    for index, row in merged_df.iterrows():
-        harga_barang = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        kerugian_ketidakadaan_barang = int(row["Kerugian Ketidakadaan Barang (Cu) /Unit"]) if not pd.isna(row["Kerugian Ketidakadaan Barang (Cu) /Unit"]) else 0
-        standar_deviasi = float(row["Standar Deviasi Permintaan Barang (s)"]) if not pd.isna(row["Standar Deviasi Permintaan Barang (s)"]) else 0
-        rata_rata_permintaan_barang = float(row["Rata - Rata Permintaan Barang (alpha)"]) if not pd.isna(row["Rata - Rata Permintaan Barang (alpha)"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_taktentu.append(calc.Model_Tchebycheff_TakTentu(harga_barang, kerugian_ketidakadaan_barang, standar_deviasi, rata_rata_permintaan_barang, material_code,material_description,abc_indikator))
-
-        except Exception as e:
-            result_taktentu.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Harga Barang (p) /Unit": harga_barang,
-                "Kerugian Ketidakadaan Barang (Cu) /Unit": kerugian_ketidakadaan_barang,
-                "Standar Deviasi Permintaan Barang (s)": standar_deviasi,
-                "Rata - Rata Permintaan Barang (alpha)": rata_rata_permintaan_barang,
-                "Nilai K Model Tchebycheff": "",
-                "Lot Pemesanan Optimal (q0)": ""
-            })
-
+    result_taktentu = df.apply(process_row, axis=1).tolist()
     return result_taktentu
 
 # non moving regret
 def non_moving_regret(nonmoving_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(nonmoving_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(nonmoving_array): material_code_list.append(item["Material_Code"])
+
+    # ambil data dari database
+    product = db.get_product_model(material_code_list)
+    if product[0] == "failed": return
+
+    # gabungkan data
+    df_array = pd.DataFrame(nonmoving_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
+
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_kekurangan'] = 3720000000
+    df.loc[:, 'komponen_terpasang'] = 5
 
     result_nonmoving = []
 
-    product = db.get_product_model(material_code_list)
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        ongkos_permintaan = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        ongkos_kekurangan = int(row["ongkos_kekurangan"]) if not pd.isna(row["ongkos_kekurangan"]) else 0
+        komponen_terpasang = int(row["komponen_terpasang"]) if not pd.isna(row["komponen_terpasang"]) else 0
 
-    if product[0] == "failed": return
+        return_null = {
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': ongkos_permintaan,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': ongkos_kekurangan,
+        'Jumlah Komponen Terpasang /Unit (m)': komponen_terpasang,
+        'Harga Resale Rp/Unit/Hari (O)': '',
+        'Ekspetasi Ongkos Inventory Minimum /Rp': '',
+        'Ukuran Lot Penyediaan /Unit (qi)': ''
+        }
 
-    df1 = pd.DataFrame(nonmoving_array)
-    df2 = pd.DataFrame(product[1])
+        if ongkos_permintaan == 0: return return_null
+        try: return calc.model_minimasi_regret(code, description, indicator, ongkos_permintaan, ongkos_kekurangan, komponen_terpasang)
+        except Exception as e: return return_null
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
-
-    df2_clean = df2.drop_duplicates(subset='material_code')
-
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
-
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
-    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
-
-    for index, row in merged_df.iterrows():
-        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
-        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_nonmoving.append(calc.Model_MinMaxRegret(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
-
-        except Exception as e:
-            result_nonmoving.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
-                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
-                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
-                "Minimum Regret (Rp )": "",
-                "Harga Resale Komponen (O)": "",
-                "Strategi Penyediaan Optimal (Unit)": "",
-            })
-
+    result_nonmoving = df.apply(process_row, axis=1).tolist()
     return result_nonmoving
 
 # non moving linear
 def non_moving_linear(nonmoving_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(nonmoving_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(nonmoving_array): material_code_list.append(item["Material_Code"])
+
+    # ambil data dari database
+    product = db.get_product_model(material_code_list)
+    if product[0] == "failed": return
+
+    # gabungkan data
+    df_array = pd.DataFrame(nonmoving_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
+
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_kekurangan'] = 3720000000
+    df.loc[:, 'komponen_terpasang'] = 5
 
     result_nonmoving = []
 
-    product = db.get_product_model(material_code_list)
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        ongkos_permintaan = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        ongkos_kekurangan = int(row["ongkos_kekurangan"]) if not pd.isna(row["ongkos_kekurangan"]) else 0
+        komponen_terpasang = int(row["komponen_terpasang"]) if not pd.isna(row["komponen_terpasang"]) else 0
 
-    if product[0] == "failed": return
+        return_null = {
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': ongkos_permintaan,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': ongkos_kekurangan,
+        'Jumlah Komponen Terpasang /Unit (m)': komponen_terpasang,
+        'Harga Resale Rp/Unit/Hari (O)': '',
+        'Ekspetasi Ongkos Inventory Minimum /Rp': '',
+        'Ukuran Lot Penyediaan /Unit (qi)': ''
+        }
 
-    df1 = pd.DataFrame(nonmoving_array)
-    df2 = pd.DataFrame(product[1])
+        if ongkos_permintaan == 0: return return_null
+        try: return calc.model_estimasi_probabilitas_linear(code, description, indicator, ongkos_permintaan, ongkos_kekurangan, komponen_terpasang)
+        except Exception as e: return return_null
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
-
-    df2_clean = df2.drop_duplicates(subset='material_code')
-
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
-
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
-    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
-
-    for index, row in merged_df.iterrows():
-        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
-        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_nonmoving.append(calc.model_kerusakan_linear(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
-
-        except Exception as e:
-            result_nonmoving.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
-                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
-                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
-                "Minimum Regret (Rp )": "",
-                "Harga Resale Komponen (O)": "",
-                "Strategi Penyediaan Optimal (Unit)": "",
-            })
-
+    result_nonmoving = df.apply(process_row, axis=1).tolist()
     return result_nonmoving
 
 # non moving regret
 def non_moving_non_linear(nonmoving_array):
+    # ambil list material code
     material_code_list = []
-    for index, item in enumerate(nonmoving_array):
-        material_code_list.append(item["Material_Code"])
+    for index, item in enumerate(nonmoving_array): material_code_list.append(item["Material_Code"])
+
+    # ambil data dari database
+    product = db.get_product_model(material_code_list)
+    if product[0] == "failed": return
+
+    # gabungkan data
+    df_array = pd.DataFrame(nonmoving_array)
+    df_database = pd.DataFrame(product[1])
+    df_array['Material_Code'] = df_array['Material_Code'].astype(str)
+    df_database['material_code'] = df_database['material_code'].astype(str)
+    df = pd.merge(df_array, df_database, left_on="Material_Code", right_on="material_code", how="left")
+
+    # identifikasi input
+    df['harga_barang'] = pd.to_numeric(df['price'], errors='coerce')
+    df.loc[:, 'ongkos_kekurangan'] = 3720000000
+    df.loc[:, 'komponen_terpasang'] = 5
 
     result_nonmoving = []
 
-    product = db.get_product_model(material_code_list)
+    # hitung semua data
+    def process_row(row):
+        code = row['Material_Code']
+        description = row['Material Description']
+        indicator = row['indicator']
+        ongkos_permintaan = int(row["harga_barang"]) if not pd.isna(row["harga_barang"]) else 0
+        ongkos_kekurangan = int(row["ongkos_kekurangan"]) if not pd.isna(row["ongkos_kekurangan"]) else 0
+        komponen_terpasang = int(row["komponen_terpasang"]) if not pd.isna(row["komponen_terpasang"]) else 0
 
-    if product[0] == "failed": return
+        return_null = {
+        'Material Code': code,
+        'Material Description': description,
+        'ABC Indicator': indicator,
+        'Ongkos Pemakaian Rp/Unit/Tahun (H)': ongkos_permintaan,
+        'Kerugian Akibat Kerusakan Rp/Unit/Hari (L)': ongkos_kekurangan,
+        'Jumlah Komponen Terpasang /Unit (m)': komponen_terpasang,
+        'Harga Resale Rp/Unit/Hari (O)': '',
+        'Ekspetasi Ongkos Inventory Minimum /Rp': '',
+        'Ukuran Lot Penyediaan /Unit (qi)': ''
+        }
 
-    df1 = pd.DataFrame(nonmoving_array)
-    df2 = pd.DataFrame(product[1])
+        if ongkos_permintaan == 0: return return_null
+        try: return calc.model_estimasi_probabilitas_hiperbolis(code, description, indicator, ongkos_permintaan, ongkos_kekurangan, komponen_terpasang)
+        except Exception as e: return return_null
 
-    df1['Material_Code'] = df1['Material_Code'].astype(str)
-    df2['material_code'] = df2['material_code'].astype(str)
-
-    df2_clean = df2.drop_duplicates(subset='material_code')
-
-    merged_df = pd.merge(df1, df2_clean, left_on="Material_Code", right_on="material_code", how="left")
-
-    merged_df = merged_df.rename(columns={"price": "Harga Barang (p) /Unit"})
-    merged_df = merged_df.rename(columns={'indicator': "ABC Indicator"})
-
-    merged_df['Harga Barang (p) /Unit'] = pd.to_numeric(merged_df['Harga Barang (p) /Unit'], errors='coerce')
-    merged_df.loc[:, 'Stock Out Effect'] = 3720000000
-    merged_df.loc[:, 'Jumlah Komponen Terpasang'] = 5
-
-    for index, row in merged_df.iterrows():
-        ongkos_pemakaian_komponen = int(row["Harga Barang (p) /Unit"]) if not pd.isna(row["Harga Barang (p) /Unit"]) else 0
-        ongkos_kerugian_akibat_kerusakan = float(row["Stock Out Effect"]) if not pd.isna(row["Stock Out Effect"]) else 0
-        jumlah_komponen_terpasang = int(row["Jumlah Komponen Terpasang"]) if not pd.isna(row["Jumlah Komponen Terpasang"]) else 0
-        material_code = row["Material_Code"]
-        material_description = row["Material Description"]
-        abc_indikator = row["ABC Indicator"]
-
-        try:
-            result_nonmoving.append(calc.model_kerusakan_non_linear(ongkos_pemakaian_komponen, ongkos_kerugian_akibat_kerusakan, jumlah_komponen_terpasang, material_code, material_description, abc_indikator))
-
-        except Exception as e:
-            result_nonmoving.append({
-                "Material Code": material_code,
-                "Material Description": material_description,
-                "ABC Indicator": abc_indikator,
-                "Ongkos Pemakaian Komponen (H)": ongkos_pemakaian_komponen,
-                "Ongkos Kerugian Akibat Kerusakan (L)": ongkos_kerugian_akibat_kerusakan,
-                "Jumlah Komponen Terpasang (m)": jumlah_komponen_terpasang,
-                "Minimum Regret (Rp )": "",
-                "Harga Resale Komponen (O)": "",
-                "Strategi Penyediaan Optimal (Unit)": "",
-            })
-
+    result_nonmoving = df.apply(process_row, axis=1).tolist()
     return result_nonmoving
 
 # bcr
@@ -1135,14 +1111,6 @@ def processing_model(dataframe):
     for kategori in kategori_list: result[kategori] = df[df['Kategori'] == kategori].to_dict(orient='records')
     result["BCR"] = sum(result.values(), [])
 
-    poisson_array = result["Pola Poisson"]
-    result_poisson = []
-    if len(poisson_array) != 0: result_poisson = poisson_model(poisson_array)
-
-    bcr_array = result["BCR"]
-    result_bcr = []
-    if len(bcr_array) != 0: result_bcr = bcr_model(bcr_array)
-
     deterministik_array = result["Pola Deterministik"]
     result_deterministik = []
     if len(deterministik_array) != 0:
@@ -1152,6 +1120,10 @@ def processing_model(dataframe):
     result_normal = []
     if len(normal_array) != 0:
         result_normal = normal_model(normal_array)
+
+    poisson_array = result["Pola Poisson"]
+    result_poisson = []
+    if len(poisson_array) != 0: result_poisson = poisson_model(poisson_array)
 
     taktentu_array = result["Pola Tak - Tentu"]
     result_taktentu = []
@@ -1171,6 +1143,10 @@ def processing_model(dataframe):
     result_nonmovingnonlinear = []
     if len(nonmoving_array) != 0:
         result_nonmovingnonlinear = non_moving_non_linear(nonmoving_array)
+
+    bcr_array = result["BCR"]
+    result_bcr = []
+    if len(bcr_array) != 0: result_bcr = bcr_model(bcr_array)
 
     results = {
         "wilson": result_deterministik,

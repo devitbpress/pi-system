@@ -212,30 +212,19 @@ def put_product():
 
 @bp_api.route('/api/contoh/q', methods=['GET'])
 def contoh_q():
-    Rata_Rata_Permintaan_Barang_ModelQ_D = 100000
-    Lead_Time_ModelQ_L = 0.25
-    Standar_Deviasi_Permintaan_Barang_ModelQ_S = 10000
-    Ongkos_Pesan_ModelQ_A = 2500000
-    Harga_barang_ModelQ_p = 25000
-    Ongkos_Simpan_ModelQ_h = 5000
-    Ongkos_kekurangan_inventori_setiap_unit_barang_ModelQ_Cu = 100000
-    MaterialCode = 'code'
-    Material_Description = 'description'
-    ABC_Indikator = 'indikator'
+    code = 'code'
+    description = 'description'
+    indicator = 'indikator'
+    harga_barang = 25000
+    ongkos_pesan = 2500000
+    ongkos_simpan = 5000
+    ongkos_kekurangan = 100000
+    rata_rata_permintaan = 100000
+    standar_deviasi = 10000
+    lead_time = 0.25
 
     try:
-        result = calc.Model_Q(
-            Rata_Rata_Permintaan_Barang_ModelQ_D,
-            Lead_Time_ModelQ_L, 
-            Standar_Deviasi_Permintaan_Barang_ModelQ_S, 
-            Ongkos_Pesan_ModelQ_A,
-            Harga_barang_ModelQ_p,
-            Ongkos_Simpan_ModelQ_h, 
-            Ongkos_kekurangan_inventori_setiap_unit_barang_ModelQ_Cu,
-            MaterialCode, 
-            Material_Description, 
-            ABC_Indikator
-        )
+        result = calc.model_q(code, description, indicator, harga_barang, ongkos_pesan, ongkos_simpan, ongkos_kekurangan, rata_rata_permintaan, standar_deviasi, lead_time)
 
         return jsonify(result), 200
 
