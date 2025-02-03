@@ -67,6 +67,10 @@ const calcManual = async (argModel) => {
 
     const response = await postFetch("/api/get/calc/manual", { model: modelSet[argModel], items: dataForm });
 
+    if (response.data.message !== "") {
+        popupContent("show", '<div class="p-6 bg-white rounded-lg shadow text-center border border-sky-300" >Silakan cek kembali parameter yang dimasukan,<br />kemudian hitung ulang agar tidak menghasilkan negative</div>', "blur");
+    }
+
     const indikatorResult = {
         Wilson: ["Frequensi Pemesanan (f)", "Ongkos Pembelian /Tahun (Ob)", "Ongkos Pemesanan /Tahun (Op)", "Ongkos Penyimpanan /Tahun (Os)", "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", "Re-Order Point ROP /Unit (r)", "Selang Waktu /Hari (T)", "Ongkos Inventori Total /Tahun"],
         Q: ["Iterasi", "Standar Deviasi Lead Time Unit/Tahun (SL)", "Rata-Rata Permintaan Lead Time Unit/Tahun (DL)", "Frequensi Pemesanan (f)", "Ongkos Pembelian (Ob) /Tahun", "Ongkos Pemesanan (Op) /Tahun", "Ongkos Penyimpanan (Os) /Tahun", "Ongkos Kekurangan Inventori (Ok) /Tahun", "Lot Pengadaan Barang EOQ Unit/Pesanan (qo)", "Reorder Point ROP /Unit (r)", "Safety Stock /Unit (ss)", "Ongkos Inventori Total /Tahun (OT)", "Tingkat Pelayanan %"],

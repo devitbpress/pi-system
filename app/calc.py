@@ -139,8 +139,6 @@ def model_poisson(code, description, indicator, p, A, h, Cu, D, s, L):
     n = (1 - a)*100 #Hitung Tingkat Pelayanan
     iterasi = j + 1
 
-    # if qo or r or ss or OT or n: return {'message': 'Silakan cek kembali parameter yang dimasukkan'}
-
     return {
         # base
         'Material Code': code or '',
@@ -163,7 +161,8 @@ def model_poisson(code, description, indicator, p, A, h, Cu, D, s, L):
         'Reorder Point ROP /Unit (r)': r,
         'Safety Stock /Unit (ss)': ss,
         'Ongkos Inventori /Tahun (OT)': OT,
-        'Tingkat pelayanan % (n)': n
+        'Tingkat pelayanan % (n)': n,
+        'message': 'Silakan cek kembali parameter yang dimasukkan' if any(val < 0.5 for val in [qo, r, ss, OT, n]) else ''
     }
 
 def model_tchebycheff(code, description, indicator, p, Cu, a, s):
