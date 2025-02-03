@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import random
 
 from scipy.stats import f, shapiro, kstest, poisson, chisquare
 from app import calc
@@ -1059,8 +1058,7 @@ def bcr_model(bcr_array):
     df.loc[:, 'kerugian_komponen'] = 3720000000
     df.loc[:, 'suku_bunga'] = 10
     df.loc[:, 'sisa_operasi'] = 5
-    probabilitas_options = ['uniform', 'linear', 'hiperbolik', 'kuadratis', 'kubik']
-    df['probabilitas'] = [random.choice(probabilitas_options) for _ in range(len(df))]
+    df['probabilitas'] = 'uniform'
 
     result_bcr = []
 

@@ -139,8 +139,7 @@ def model_poisson(code, description, indicator, p, A, h, Cu, D, s, L):
     n = (1 - a)*100 #Hitung Tingkat Pelayanan
     iterasi = j + 1
 
-    def ensure_non_negative(value):
-        return max(value, 0)
+    # if qo or r or ss or OT or n: return {'message': 'Silakan cek kembali parameter yang dimasukkan'}
 
     return {
         # base
@@ -160,11 +159,11 @@ def model_poisson(code, description, indicator, p, A, h, Cu, D, s, L):
         'Nilai Alpha (a)': a,
         'Standar Deviasi Waktu Ancang-ancang Unit/Tahun (SL)': SL,
         # output
-        'Economic Order Quantity EOQ Unit/Pesanan (qo)': ensure_non_negative(qo),
-        'Reorder Point ROP /Unit (r)': ensure_non_negative(r),
-        'Safety Stock /Unit (ss)': ensure_non_negative(ss),
-        'Ongkos Inventori /Tahun (OT)': ensure_non_negative(OT),
-        'Tingkat pelayanan % (n)': ensure_non_negative(n)
+        'Economic Order Quantity EOQ Unit/Pesanan (qo)': qo,
+        'Reorder Point ROP /Unit (r)': r,
+        'Safety Stock /Unit (ss)': ss,
+        'Ongkos Inventori /Tahun (OT)': OT,
+        'Tingkat pelayanan % (n)': n
     }
 
 def model_tchebycheff(code, description, indicator, p, Cu, a, s):
