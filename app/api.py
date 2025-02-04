@@ -316,8 +316,8 @@ def contoh_bcr():
     harga_komponen = 100
     kerugian_komponen = 1000
     suku_bunga = 10
-    sisa_operasi = 10
-    pola_probabilitas = "kubik"
+    sisa_operasi = 5
+    pola_probabilitas = "uniform"
 
     try:
         result = calc.model_benefit_cost_ratio(material_code, material_description, abc_indicator, harga_komponen, kerugian_komponen, suku_bunga, sisa_operasi, pola_probabilitas)

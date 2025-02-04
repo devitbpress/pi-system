@@ -67,7 +67,7 @@ const calcManual = async (argModel) => {
 
     const response = await postFetch("/api/get/calc/manual", { model: modelSet[argModel], items: dataForm });
 
-    if (response.data.message !== "") {
+    if (argModel === "Poisson" && response.data.message !== "") {
         popupContent("show", '<div class="p-6 bg-white rounded-lg shadow text-center border border-sky-300" >Silakan cek kembali parameter yang dimasukan,<br />kemudian hitung ulang agar tidak menghasilkan negative</div>', "blur");
     }
 
